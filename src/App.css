@@ -1,322 +1,397 @@
 .app {
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 22px 18px 64px;
+  padding-block: 0 56px;
+  padding-inline: 18px;
 }
+
+/* ─────────────────────────────── نوار بالا ─────────────────────────────── */
 
 .topbar {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
+  padding-block: 20px 18px;
   margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
 }
 
 .brand {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* نشانِ برنامه: شبکه‌ی سه‌ستونیِ کوچکِ خودِ جدول هفتگی */
+.brand__mark {
+  display: grid;
+  grid-template-columns: repeat(3, 5px);
+  grid-auto-rows: 5px;
   gap: 2px;
+  padding: 7px;
+  border-radius: var(--r-md);
+  background: var(--primary);
+  flex: 0 0 auto;
+}
+
+.brand__mark i {
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--primary-ink) 30%, transparent);
+}
+
+.brand__mark i.on {
+  background: var(--primary-ink);
+}
+
+.brand__text {
+  display: flex;
+  flex-direction: column;
 }
 
 .brand__title {
-  font-size: 19px;
-  letter-spacing: -0.2px;
+  font-size: var(--t-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .brand__sub {
-  font-size: 12.5px;
-  color: var(--text-dim);
+  font-size: var(--t-xs);
+  color: var(--ink-3);
 }
 
-/* ناوبری: قرص فرورفته، قلم فعال برجسته */
+/* ناوبری بخش‌ها: سگمنتِ واضح، بخش فعال پرِ لاجوردی */
 .tabs {
   display: inline-flex;
-  gap: 6px;
-  padding: 6px;
-  border-radius: var(--r-pill);
-  background: var(--sunk-bg);
-  box-shadow: var(--sink-2);
+  gap: 3px;
+  padding: 3px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
 }
 
 .tabs__btn {
   border: 0;
   background: transparent;
-  box-shadow: none;
-  padding: 8px 16px;
-  border-radius: var(--r-pill);
-  color: var(--text-dim);
+  padding: 7px 14px;
+  border-radius: var(--r-sm);
+  color: var(--ink-2);
   font-weight: 600;
-  font-size: 13.5px;
+  font-size: var(--t-sm);
   cursor: pointer;
+  white-space: nowrap;
   transition:
-    box-shadow var(--dur) var(--ease),
-    color var(--dur) var(--ease),
-    background var(--dur) var(--ease);
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
 }
 
-.tabs__btn:hover { color: var(--text-soft); }
+.tabs__btn:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
 
 .tabs__btn.is-active {
   background: var(--surface);
-  box-shadow: var(--raise-1);
-  color: var(--accent);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .tabs__badge {
   margin-inline-start: 6px;
-  font-size: 11.5px;
+  font-size: var(--t-xs);
   font-variant-numeric: tabular-nums;
-  color: var(--text-dim);
+  color: var(--ink-3);
+  font-weight: 500;
 }
 
-.page { display: flex; flex-direction: column; gap: 18px; }
+.tabs__btn.is-active .tabs__badge { color: var(--primary); }
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 .section-title {
-  font-size: 15.5px;
+  font-size: var(--t-h2);
+  font-weight: 700;
   margin-bottom: 4px;
 }
 
 .section-hint {
-  font-size: 13px;
-  color: var(--text-dim);
+  font-size: var(--t-sm);
+  color: var(--ink-2);
   margin-bottom: 14px;
   line-height: 1.85;
+  max-width: 68ch;
 }
 
-/* جمع واحد — همیشه دیده می‌شود */
+/* ───────────────── شاخصِ واحد: عددِ بزرگ، چون واحد رقمِ اصلیِ تصمیم است ───────────────── */
+
 .credit-meter {
   display: inline-flex;
   align-items: baseline;
-  gap: 7px;
-  padding: 8px 16px;
-  border-radius: var(--r-pill);
-  box-shadow: var(--sink-1);
-  background: var(--sunk-bg);
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: var(--r-md);
+  background: var(--primary-weak);
+  border: 1px solid var(--primary-line);
 }
 
 .credit-meter__num {
-  font-size: 19px;
+  font-size: 1.25rem;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--primary);
   font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
 
-.credit-meter__label { font-size: 12.5px; color: var(--text-dim); }
+.credit-meter__label {
+  font-size: var(--t-xs);
+  color: var(--primary);
+  opacity: 0.85;
+  font-weight: 600;
+}
 
-/* فهرست درس‌ها */
+/* ───────────────────────── فهرست درس‌ها: ردیف، نه کارت ───────────────────────── */
+
 .course-list {
   display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
 }
 
 .course-row {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 13px 15px;
+  gap: 11px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
   border-radius: var(--r-md);
   background: var(--surface);
-  box-shadow: var(--raise-1);
   cursor: pointer;
   text-align: start;
-  border: 0;
   font: inherit;
   color: inherit;
-  transition:
-    box-shadow var(--dur) var(--ease),
-    transform var(--dur) var(--ease);
   width: 100%;
+  transition:
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
 }
 
-.course-row:active { transform: scale(0.99); }
-.course-row.is-on { box-shadow: var(--sink-2); }
+.course-row:hover { border-color: var(--line-strong); }
+
+.course-row.is-on {
+  background: var(--primary-weak);
+  border-color: var(--primary-line);
+}
 
 .course-row__body { flex: 1 1 auto; min-width: 0; }
 
 .course-row__name {
   font-weight: 700;
-  font-size: 14px;
+  font-size: var(--t-h3);
   line-height: 1.5;
 }
 
-.course-row.is-on .course-row__name { color: var(--accent); }
+.course-row.is-on .course-row__name { color: var(--primary); }
 
 .course-row__meta {
-  font-size: 12px;
-  color: var(--text-dim);
-  margin-top: 3px;
+  font-size: var(--t-xs);
+  color: var(--ink-3);
+  margin-top: 2px;
   display: flex;
-  gap: 10px;
+  gap: 9px;
   flex-wrap: wrap;
-}
-
-/* چک‌باکس نئومورفیک */
-.tick {
-  flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
-  background: var(--surface);
-  box-shadow: var(--raise-1);
-  display: grid;
-  place-items: center;
-  margin-top: 3px;
-  transition: box-shadow var(--dur) var(--ease);
-}
-
-.tick svg { opacity: 0; transition: opacity var(--dur) var(--ease); }
-.tick.is-on { box-shadow: var(--sink-1); }
-.tick.is-on svg { opacity: 1; }
-
-/* نوار ابزار جست‌وجو/فیلتر */
-.toolbar {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: minmax(200px, 2fr) minmax(140px, 1fr) minmax(140px, 1fr);
-}
-
-/* ترکیب‌های پیشنهادی */
-/* نوار ترکیب‌ها: کارت‌ها عرض ثابت دارند تا با ۲ ترکیب هم کشیده و بدقامت نشوند */
-.combo-strip {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fill, 138px);
-  justify-content: start;
-}
-
-/* انتخاب دستی گروه: برچسب و کشوی هر درس در یک کارتِ برجسته، تا جفت‌بودنشان پیدا باشد */
-.pick-grid {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
-}
-
-.pick {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 13px;
-  border-radius: var(--r-md);
-  box-shadow: var(--raise-1);
-}
-
-.pick__label {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.5;
-  display: flex;
-  flex-direction: column;
-}
-
-.pick__credits {
-  font-size: 11.5px;
-  font-weight: 500;
-  color: var(--text-dim);
-}
-
-.pick__select {
-  width: 150px;
-  flex: 0 0 auto;
-  padding: 8px 12px;
-  font-size: 12.5px;
-  padding-inline-end: 30px;
-}
-
-.combo-card {
-  border: 0;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  padding: 9px;
-  border-radius: var(--r-md);
-  background: var(--surface);
-  box-shadow: var(--raise-1);
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  transition:
-    box-shadow var(--dur) var(--ease),
-    transform var(--dur) var(--ease);
-}
-
-.combo-card:hover { box-shadow: var(--raise-2); }
-.combo-card:active { transform: scale(0.98); }
-.combo-card.is-active { box-shadow: var(--sink-2); }
-
-.combo-card__label {
-  font-size: 11.5px;
-  color: var(--text-dim);
-  text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
-.combo-card.is-active .combo-card__label { color: var(--accent); font-weight: 700; }
+/* چک‌باکس */
+.tick {
+  flex: 0 0 auto;
+  width: 19px;
+  height: 19px;
+  border-radius: var(--r-xs);
+  background: var(--surface);
+  border: 1.5px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  margin-top: 4px;
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.tick svg { opacity: 0; transition: opacity var(--dur) var(--ease); }
+
+.tick.is-on {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.tick.is-on svg { opacity: 1; }
+
+.toolbar {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(200px, 2fr) minmax(150px, 1fr) minmax(140px, auto);
+}
+
+/* ───────────────────── نوارِ خلاصه: چکیده پیش از جزئیات ───────────────────── */
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+
+/* ───────────────────────── ترکیب‌های پیشنهادی ───────────────────────── */
+
+/* ترکیب‌ها در ستونی کنارِ جدول: با ۲ ترکیب فضای مرده نمی‌ماند،
+   با ۵۰ ترکیب هم ریل خودش اسکرول می‌شود. */
+.plan {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.plan__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 760px;
+  overflow-y: auto;
+  padding-inline-end: 4px;
+}
+
+.plan__grid { min-width: 0; }
+
+.combo-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.combo-card {
+  border: 1px solid var(--line);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition:
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
+}
+
+.combo-card:hover { border-color: var(--line-strong); }
+
+.combo-card.is-active {
+  border-color: var(--primary);
+  background: var(--primary-weak);
+  box-shadow: 0 0 0 2px var(--primary-weak);
+}
+
+.combo-card__label {
+  font-size: var(--t-xs);
+  color: var(--ink-3);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.combo-card.is-active .combo-card__label { color: var(--primary); }
 
 .combo-nav {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .combo-nav__pos {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
-  font-size: 13.5px;
-  padding: 7px 15px;
-  border-radius: var(--r-pill);
-  box-shadow: var(--sink-1);
-  background: var(--sunk-bg);
-  color: var(--text-soft);
+  font-size: var(--t-sm);
+  padding: 5px 13px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
 }
 
-/* کارت جزئیات درس */
+/* ───────────────────────── کارت جزئیات درس ───────────────────────── */
+
 .detail-grid {
   display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  align-items: start;
 }
 
 .detail {
-  padding: 15px 17px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
   border-radius: var(--r-md);
   background: var(--surface);
-  box-shadow: var(--raise-1);
-  scroll-margin-top: 20px;
-  transition: box-shadow var(--dur) var(--ease);
+  scroll-margin-top: 16px;
+  transition:
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
 }
 
-.detail.is-focus { box-shadow: var(--raise-3); }
+.detail.is-focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-weak);
+}
 
 .detail__top {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 9px;
 }
 
+/* نقطه‌ی رنگی: پیوندِ کارت با بلاکِ همان درس در جدول */
 .detail__dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: var(--r-pill);
   flex: 0 0 auto;
   margin-top: 8px;
 }
 
-.detail__name { font-weight: 700; font-size: 14.5px; line-height: 1.5; }
-.detail__sub { font-size: 12.5px; color: var(--text-dim); margin-top: 2px; }
+.detail__name {
+  font-weight: 700;
+  font-size: var(--t-h3);
+  line-height: 1.5;
+}
+
+.detail__sub {
+  font-size: var(--t-xs);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
 
 .detail__sessions {
-  margin: 11px 0 0;
+  margin: 10px 0 0;
   padding: 0;
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  font-size: 12.5px;
-  color: var(--text-soft);
+  gap: 4px;
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
 }
 
 .detail__sessions li {
@@ -327,161 +402,252 @@
 }
 
 .detail__day {
-  min-width: 62px;
-  font-weight: 600;
-  color: var(--text);
+  min-width: 58px;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .alt-toggle {
-  margin-top: 12px;
+  margin-top: 11px;
   width: 100%;
   justify-content: space-between;
-  padding-inline: 14px;
+  padding-inline: 13px;
 }
 
 .alt-list {
   list-style: none;
-  margin: 10px 0 0;
+  margin: 9px 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 5px;
 }
 
 .alt {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   width: 100%;
-  border: 0;
+  border: 1px solid var(--line);
   font: inherit;
   color: inherit;
   text-align: start;
-  padding: 9px 12px;
+  padding: 8px 11px;
   border-radius: var(--r-sm);
   background: var(--surface);
-  box-shadow: var(--raise-1);
   cursor: pointer;
   transition:
-    box-shadow var(--dur) var(--ease),
-    transform var(--dur) var(--ease);
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
 }
 
-.alt:active { transform: scale(0.99); }
-.alt.is-current { box-shadow: var(--sink-2); }
-.alt.is-current .alt__no { color: var(--accent); }
+.alt:hover:not(:disabled) { border-color: var(--line-strong); }
 
+.alt.is-current {
+  background: var(--primary-weak);
+  border-color: var(--primary-line);
+}
+
+.alt.is-current .alt__no { color: var(--primary); }
+
+/* گروهِ متداخل: همان هاشورِ جدول، تا زبانِ بصری یکی باشد */
 .alt.is-clash {
-  background-image: repeating-linear-gradient(-45deg, var(--danger-soft) 0 6px, transparent 6px 12px);
+  background: var(--crit-weak);
+  border-color: var(--crit-line);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 0, 0, 0.035) 0 5px,
+    transparent 5px 10px
+  );
 }
 
 .alt__no {
-  font-weight: 700;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
-  font-size: 12.5px;
-  min-width: 26px;
+  font-size: var(--t-xs);
+  min-width: 24px;
 }
 
 .alt__body { flex: 1 1 auto; min-width: 0; }
-.alt__time { font-size: 12px; color: var(--text-soft); }
-.alt__who { font-size: 11.5px; color: var(--text-dim); }
 
-/* پیش‌نمایش ایمپورت */
+.alt__time {
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.alt__who { font-size: var(--t-xs); color: var(--ink-3); }
+
+/* ───────────────────── انتخاب دستی گروه‌ها ───────────────────── */
+
+.pick-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.pick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.pick__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--t-sm);
+  font-weight: 700;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+}
+
+.pick__credits {
+  font-size: var(--t-xs);
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.pick__select {
+  width: 152px;
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  font-size: var(--t-xs);
+  padding-inline-end: 28px;
+}
+
+/* ───────────────────── پیش‌نمایش ایمپورت ───────────────────── */
+
 .preview-wrap {
   overflow-x: auto;
+  border: 1px solid var(--line);
   border-radius: var(--r-md);
-  background: var(--sunk-bg);
-  box-shadow: var(--sink-2);
-  padding: 4px;
+  background: var(--surface);
 }
 
 .preview {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 4px;
-  font-size: 12.5px;
-  min-width: 940px;
+  border-collapse: collapse;
+  font-size: var(--t-xs);
+  min-width: 960px;
 }
 
-.preview th {
+.preview thead th {
   text-align: start;
-  padding: 8px 10px;
-  color: var(--text-dim);
-  font-size: 11.5px;
+  padding: 9px 10px;
+  color: var(--ink-3);
+  font-size: var(--t-label);
   font-weight: 700;
+  letter-spacing: 0.04em;
   white-space: nowrap;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
 }
 
 .preview td {
-  padding: 3px 4px;
-  background: var(--surface);
+  padding: 2px 4px;
   vertical-align: top;
+  border-bottom: 1px solid var(--line);
 }
 
-.preview tr td:first-child { border-start-start-radius: var(--r-sm); border-end-start-radius: var(--r-sm); }
-.preview tr td:last-child { border-start-end-radius: var(--r-sm); border-end-end-radius: var(--r-sm); }
-.preview tr.has-warn td { background: var(--warn-soft); }
+/* ردیفِ نیازمند بازبینی: نوارِ زعفرانی در لبه‌ی ردیف */
+.preview tr.has-warn td {
+  background: var(--warn-weak);
+}
+
+.preview tr.has-warn td:first-child {
+  box-shadow: inset 3px 0 0 var(--warn);
+}
 
 .cell-input {
   width: 100%;
-  border: 0;
+  border: 1px solid transparent;
   background: transparent;
-  padding: 7px 8px;
-  border-radius: 8px;
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
   font: inherit;
   color: inherit;
-  transition: box-shadow var(--dur) var(--ease);
+  transition:
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
 }
 
-.cell-input:focus { box-shadow: var(--sink-1); outline: none; }
+.cell-input:hover { border-color: var(--line); }
+
+.cell-input:focus {
+  outline: none;
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-weak);
+}
+
 .cell-input--code { font-variant-numeric: tabular-nums; }
 
 textarea.cell-input {
   resize: vertical;
-  min-height: 62px;
+  min-height: 58px;
   line-height: 1.7;
-  font-size: 11.5px;
 }
 
-.w-code { width: 108px; }
-.w-grp { width: 64px; }
-.w-num { width: 62px; }
-.w-time { min-width: 230px; }
-.w-exam { width: 120px; }
+.w-code { width: 104px; }
+.w-grp { width: 62px; }
+.w-num { width: 58px; }
+.w-time { min-width: 240px; }
+.w-exam { width: 116px; }
 
-/* تمام‌صفحه */
+/* ───────────────────── نمایش تمام‌صفحه ───────────────────── */
+
 .fullscreen {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: var(--bg);
-  padding: 18px;
+  background: var(--ground);
+  padding: 16px;
   overflow: auto;
 }
 
 .fullscreen__bar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 14px;
   flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
 }
 
 .footer-note {
-  margin-top: 30px;
-  font-size: 12px;
-  color: var(--text-dim);
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: var(--t-xs);
+  color: var(--ink-3);
   text-align: center;
   line-height: 2;
 }
 
-@media (max-width: 720px) {
-  .app { padding: 16px 12px 52px; }
+@media (max-width: 760px) {
+  .app { padding-inline: 14px; }
   .toolbar { grid-template-columns: 1fr; }
-  .course-list, .detail-grid, .pick-grid { grid-template-columns: 1fr; }
-  .combo-strip { grid-template-columns: repeat(auto-fill, 104px); }
-  .wg { --px-per-min: 0.85; --time-col: 46px; }
-  .brand__title { font-size: 17px; }
-  .tabs { width: 100%; justify-content: space-between; }
-  .tabs__btn { padding: 8px 10px; font-size: 12.5px; }
+  .course-list,
+  .detail-grid,
+  .pick-grid { grid-template-columns: 1fr; }
+  .plan { grid-template-columns: minmax(0, 1fr); }
+  .plan__rail {
+    max-height: none;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .combo-strip { flex-direction: row; }
+  .combo-card { flex: 0 0 104px; }
+  .wg { --px-per-min: 0.85; --time-col: 44px; }
+  .brand__title { font-size: 1.1875rem; }
+  .tabs { width: 100%; }
+  .tabs__btn { flex: 1 1 0; padding: 7px 8px; font-size: var(--t-xs); }
 }

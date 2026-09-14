@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { DayIndex, PlacedSession } from '../types'
 import { DAY_NAMES, DAY_SHORT } from '../lib/days'
-import { courseTint, layoutWeek } from '../lib/layout'
+import { courseHue, layoutWeek } from '../lib/layout'
 import { clashingSessionKeys, sessionKey } from '../lib/conflicts'
 import { faTime, fromMinutes } from '../lib/time'
 import { toFaDigits } from '../lib/digits'
@@ -92,7 +92,7 @@ export function WeeklyGrid({
                     height: block.heightPx,
                     insetInlineStart: `${block.leftPct}%`,
                     width: `calc(${block.widthPct}% - 3px)`,
-                    ['--block-tint' as string]: courseTint(p.course.code),
+                    ['--course-h' as string]: String(courseHue(p.course.code)),
                   }}
                   onClick={() => onBlockClick?.(p)}
                   title={label}

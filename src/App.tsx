@@ -114,9 +114,23 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          <h1 className="brand__title">برنامه‌ریز هفتگی انتخاب واحد</h1>
-          <span className="brand__sub">
-            چیدن برنامه‌ی بدون تداخل — کاملاً روی مرورگر خودتان، بدون سرور
+          {/* نشان: شبکه‌ی کوچکِ خودِ جدول هفتگی، با چند خانه‌ی پرشده */}
+          <span className="brand__mark" aria-hidden="true">
+            <i className="on" />
+            <i />
+            <i className="on" />
+            <i />
+            <i className="on" />
+            <i />
+            <i className="on" />
+            <i className="on" />
+            <i />
+          </span>
+          <span className="brand__text">
+            <h1 className="brand__title">برنامه‌ریز هفتگی انتخاب واحد</h1>
+            <span className="brand__sub">
+              چیدن برنامه‌ی بدون تداخل — کاملاً روی مرورگر خودتان، بدون سرور
+            </span>
           </span>
         </div>
         <span className="spacer" />

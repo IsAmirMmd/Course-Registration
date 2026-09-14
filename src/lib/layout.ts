@@ -131,9 +131,16 @@ function assignLanes(items: PlacedSession[], startMin: number, pxPerMin: number)
   return out
 }
 
-/** رنگِ ملایمِ هر درس — از کد درس، پایدار و بی‌درخشش */
-export function courseTint(code: string): string {
+/**
+ * فامِ رنگیِ هر درس، از فهرستی دستچین‌شده و پایدار بر اساس کد درس.
+ * فقط «فام» برمی‌گردد؛ اشباع و روشنایی از توکن‌های تم می‌آید تا بلاک‌ها در
+ * تم روشن و تاریک هر دو خوانا باشند. فام‌ها دست‌کم ۲۰ درجه از هم فاصله دارند و
+ * هیچ‌کدام نزدیک قرمزِ اناری (~۳۵۰) نیست، تا رنگِ درس با علامتِ تداخل اشتباه نشود.
+ */
+const COURSE_HUES = [212, 258, 312, 192, 168, 132, 88, 45, 22]
+
+export function courseHue(code: string): number {
   let hash = 0
-  for (let i = 0; i < code.length; i++) hash = (hash * 31 + code.charCodeAt(i)) % 360
-  return `hsl(${hash} 24% 52%)`
+  for (let i = 0; i < code.length; i++) hash = (hash * 31 + code.charCodeAt(i)) % 9973
+  return COURSE_HUES[hash % COURSE_HUES.length]
 }

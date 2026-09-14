@@ -1,64 +1,58 @@
 .wg {
   --px-per-min: 1.05;
-  --time-col: 62px;
+  --time-col: 58px;
   display: grid;
   grid-template-columns: var(--time-col) 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 
 .wg--mini {
   --px-per-min: 0.2;
   --time-col: 0px;
-  gap: 4px;
+  gap: 3px;
   grid-template-columns: 1fr;
 }
 
 .wg__days {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 
-.wg--mini .wg__days { gap: 3px; }
+.wg--mini .wg__days { gap: 2px; }
 
-.wg__head {
-  display: grid;
-  grid-column: 1 / -1;
-  grid-template-columns: subgrid;
-}
-
+/* سرِ ستون روزها */
 .wg__dayname {
   text-align: center;
-  font-size: 13px;
+  font-size: var(--t-sm);
   font-weight: 700;
-  color: var(--text-soft);
-  padding: 6px 0;
+  color: var(--ink-2);
+  padding: 7px 0;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
   border-radius: var(--r-sm);
-  box-shadow: var(--raise-1);
 }
 
 .wg--mini .wg__dayname {
   font-size: 8px;
+  font-weight: 600;
   padding: 1px 0;
-  box-shadow: none;
-  color: var(--text-dim);
+  border: 0;
+  background: transparent;
+  color: var(--ink-3);
   line-height: 1.4;
 }
 
-.wg__body {
-  display: contents;
-}
-
+/* محور ساعت */
 .wg__hours {
   position: relative;
-  border-radius: var(--r-md);
 }
 
 .wg__hour {
   position: absolute;
   inset-inline: 0;
-  font-size: 11.5px;
-  color: var(--text-dim);
+  font-size: var(--t-xs);
+  color: var(--ink-3);
   text-align: center;
   transform: translateY(-50%);
   font-variant-numeric: tabular-nums;
@@ -66,35 +60,34 @@
 
 .wg__day {
   position: relative;
-  background: var(--sunk-bg);
-  border-radius: var(--r-md);
-  box-shadow: var(--sink-2);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
   overflow: hidden;
   min-width: 0;
 }
 
 .wg--mini .wg__day {
-  border-radius: 5px;
-  box-shadow: var(--sink-1);
+  border-radius: 3px;
+  background: var(--surface-2);
 }
 
-/* خطوط ساعت: فقط یک نشانه‌ی ملایم، بدون بوردر تیز */
+/* خط راهنمای ساعت */
 .wg__line {
   position: absolute;
   inset-inline: 0;
   height: 1px;
-  background: var(--lo);
-  opacity: 0.35;
+  background: var(--line);
 }
 
+/* ─── بلاک درس: رنگ، اطلاعات است. پرِ کم‌رنگ + کادر + قلمِ هم‌فام ─── */
 .wg__block {
   position: absolute;
-  border: 0;
-  padding: 6px 8px;
+  padding: 5px 8px;
   border-radius: var(--r-sm);
-  background: var(--surface);
-  box-shadow: var(--raise-1);
-  color: var(--text);
+  background: hsl(var(--course-h) var(--block-bg-s) var(--block-bg-l));
+  border: 1px solid hsl(var(--course-h) var(--block-line-s) var(--block-line-l));
+  color: hsl(var(--course-h) var(--block-ink-s) var(--block-ink-l));
   text-align: start;
   overflow: hidden;
   cursor: pointer;
@@ -102,41 +95,39 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2px;
+  gap: 1px;
   transition:
-    box-shadow var(--dur) var(--ease),
-    transform var(--dur) var(--ease);
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
 }
 
-.wg__block::before {
-  content: '';
-  position: absolute;
-  inset-block: 0;
-  inset-inline-end: 0;
-  width: 4px;
-  border-radius: var(--r-pill);
-  background: var(--block-tint, var(--accent));
+.wg__block:hover {
+  border-color: hsl(var(--course-h) var(--block-mark-s) var(--block-mark-l));
+  box-shadow: var(--shadow-md);
 }
 
-.wg__block:hover { box-shadow: var(--raise-2); }
-.wg__block:active { box-shadow: var(--sink-1); transform: scale(0.98); }
+/* درسِ برجسته‌شده (بعد از کلیک روی بلاک) */
+.wg__block.is-selected {
+  border-color: hsl(var(--course-h) var(--block-mark-s) var(--block-mark-l));
+  box-shadow: 0 0 0 2px hsl(var(--course-h) var(--block-mark-s) var(--block-mark-l) / 0.35);
+}
 
-.wg__block.is-selected { box-shadow: var(--sink-2); }
-
-/* تداخل: هاشور ملایم + حاشیه‌ی هم‌رنگِ هشدار (بدون درخشش) */
+/* تداخل: هاشور + کادر اناری — حالت در «شکل» هم رمزگذاری شده، نه فقط رنگ */
 .wg__block.is-clash {
   background-image: repeating-linear-gradient(
     -45deg,
-    var(--danger-soft) 0 6px,
-    transparent 6px 12px
+    var(--crit-weak) 0 5px,
+    transparent 5px 10px
   );
-  box-shadow: var(--raise-1), inset 0 0 0 1.5px var(--danger);
+  border-color: var(--crit);
+  border-width: 1.5px;
+  color: var(--crit);
 }
 
 .wg__block-name {
-  font-size: 12.5px;
+  font-size: var(--t-xs);
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -147,31 +138,31 @@
 
 .wg__block-meta {
   font-size: 10.5px;
-  color: var(--text-dim);
+  font-weight: 500;
+  opacity: 0.8;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* بندانگشتی: فقط لکه‌های رنگیِ پُر، برای تشخیص شکلِ کلیِ هفته */
 .wg--mini .wg__block {
   padding: 0;
-  border-radius: 3px;
-  box-shadow: none;
-  background: var(--block-tint, var(--accent));
-  opacity: 0.85;
+  border-radius: 2px;
+  border: 0;
+  background: hsl(var(--course-h) var(--block-mark-s) var(--block-mark-l));
   cursor: inherit;
 }
 
-.wg--mini .wg__block::before { display: none; }
 .wg--mini .wg__block.is-clash {
-  background-image: repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.35) 0 2px, transparent 2px 4px);
-  box-shadow: inset 0 0 0 1px var(--danger);
+  background: var(--crit);
+  background-image: none;
 }
 
 .wg__empty {
-  padding: 28px;
+  padding: 26px;
   text-align: center;
-  color: var(--text-dim);
-  font-size: 13.5px;
+  color: var(--ink-3);
+  font-size: var(--t-sm);
 }

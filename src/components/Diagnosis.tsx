@@ -33,7 +33,7 @@ export function Diagnosis({ data, onDrop }: { data: DiagnosisData; onDrop?: (cod
 
       <div className="stack">
         {data.blockingPairs.map((pair) => (
-          <div key={`${pair.courseA.code}-${pair.courseB.code}`} className="sunk" style={{ padding: 14 }}>
+          <div key={`${pair.courseA.code}-${pair.courseB.code}`} className="panel">
             <div className="row row--wrap" style={{ marginBottom: 8 }}>
               <strong style={{ fontSize: 13.5 }}>
                 {pair.courseA.name} × {pair.courseB.name}
@@ -56,14 +56,14 @@ export function Diagnosis({ data, onDrop }: { data: DiagnosisData; onDrop?: (cod
             <ul className="detail__sessions">
               {pair.samples.map((s, i) => (
                 <li key={i}>
-                  <span className="chip chip--sunk num">
+                  <span className="chip num">
                     گروه {toFaDigits(s.groupA.groupNo ?? '')}
                   </span>
                   <span className="num">
                     {DAY_NAMES[s.sessionA.day]} {faTime(s.sessionA.start)}–{faTime(s.sessionA.end)}
                   </span>
                   <span className="muted">با</span>
-                  <span className="chip chip--sunk num">
+                  <span className="chip num">
                     گروه {toFaDigits(s.groupB.groupNo ?? '')}
                   </span>
                   <span className="num">
@@ -81,13 +81,13 @@ export function Diagnosis({ data, onDrop }: { data: DiagnosisData; onDrop?: (cod
         ))}
 
         {data.dropSuggestions.length > 0 && (
-          <div className="sunk" style={{ padding: 14 }}>
+          <div className="panel">
             <strong style={{ fontSize: 13.5 }}>
               با حذف هر یک از این مجموعه‌ها برنامه ساخته می‌شود
             </strong>
             <div className="row row--wrap" style={{ marginTop: 10 }}>
               {data.dropSuggestions.map((set, i) => (
-                <span key={i} className="chip chip--sunk">
+                <span key={i} className="chip">
                   {set.map((c: Course) => c.name).join(' + ')}
                 </span>
               ))}

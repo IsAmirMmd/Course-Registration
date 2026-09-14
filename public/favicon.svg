@@ -1,27 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- نئومورفیسم: هم‌رنگ با پس‌زمینه، عمق فقط از دو سایه -->
-  <defs>
-    <filter id="raise" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="-1.6" dy="-1.6" stdDeviation="1.6" flood-color="#f6f4f0" flood-opacity="1" />
-      <feDropShadow dx="1.6" dy="1.6" stdDeviation="1.6" flood-color="#c5c1b8" flood-opacity="1" />
-    </filter>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="#e7e4de" />
-  <g filter="url(#raise)">
-    <rect x="11" y="15" width="42" height="36" rx="8" fill="#e7e4de" />
+  <rect width="64" height="64" rx="14" fill="#2b4fc8" />
+  <!-- شبکه‌ی جدول هفتگی: سه ستون روز، چند خانه‌ی پرشده -->
+  <g fill="#ffffff" opacity="0.32">
+    <rect x="13" y="16" width="11" height="8" rx="2" />
+    <rect x="40" y="16" width="11" height="8" rx="2" />
+    <rect x="26.5" y="28" width="11" height="8" rx="2" />
+    <rect x="13" y="40" width="11" height="8" rx="2" />
+    <rect x="26.5" y="40" width="11" height="8" rx="2" />
   </g>
-  <!-- ستون روزها -->
-  <g fill="#c5c1b8">
-    <rect x="17" y="24" width="8" height="3.4" rx="1.7" />
-    <rect x="28" y="24" width="8" height="3.4" rx="1.7" />
-    <rect x="39" y="24" width="8" height="3.4" rx="1.7" />
-    <rect x="17" y="38" width="8" height="3.4" rx="1.7" />
-    <rect x="39" y="38" width="8" height="3.4" rx="1.7" />
-  </g>
-  <!-- بلاک‌های کلاس، با تنها رنگ تاکیدی -->
-  <g fill="#4f7d70">
-    <rect x="17" y="30.5" width="8" height="5" rx="2" />
-    <rect x="39" y="30.5" width="8" height="5" rx="2" />
-    <rect x="28" y="38" width="8" height="5" rx="2" />
+  <g fill="#ffffff">
+    <rect x="26.5" y="16" width="11" height="8" rx="2" />
+    <rect x="13" y="28" width="11" height="8" rx="2" />
+    <rect x="40" y="28" width="11" height="8" rx="2" />
+    <rect x="40" y="40" width="11" height="8" rx="2" />
   </g>
 </svg>

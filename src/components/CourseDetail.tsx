@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Course, Picks } from '../types'
 import { DAY_NAMES } from '../lib/days'
-import { courseTint } from '../lib/layout'
+import { courseHue } from '../lib/layout'
 import { toFaDigits } from '../lib/digits'
 import { faTime } from '../lib/time'
 import { alternativesFor } from '../lib/solver'
@@ -34,7 +34,12 @@ export function CourseDetail({ course, courses, picks, focused, onPickGroup, reg
       ref={(el) => registerRef?.(course.code, el)}
     >
       <div className="detail__top">
-        <span className="detail__dot" style={{ background: courseTint(course.code) }} />
+        <span
+          className="detail__dot"
+          style={{
+            background: `hsl(${courseHue(course.code)} var(--block-mark-s) var(--block-mark-l))`,
+          }}
+        />
         <div style={{ minWidth: 0, flex: '1 1 auto' }}>
           <div className="detail__name">{course.name}</div>
           <div className="detail__sub">
@@ -44,7 +49,7 @@ export function CourseDetail({ course, courses, picks, focused, onPickGroup, reg
           {group?.instructor && <div className="detail__sub">{group.instructor}</div>}
         </div>
         {group && group.capacity > 0 && (
-          <span className="chip chip--sunk">ظرفیت {toFaDigits(group.capacity)}</span>
+          <span className="chip">ظرفیت {toFaDigits(group.capacity)}</span>
         )}
       </div>
 
@@ -128,8 +133,10 @@ export function CourseDetail({ course, courses, picks, focused, onPickGroup, reg
                           </span>
                         )}
                       </span>
-                      {alt.isCurrent && <span className="chip chip--accent">فعلی</span>}
-                      {!alt.isCurrent && !alt.conflicts && <span className="chip">بی‌تداخل</span>}
+                      {alt.isCurrent && <span className="chip chip--primary">فعلی</span>}
+                      {!alt.isCurrent && !alt.conflicts && (
+                        <span className="chip chip--good">بی‌تداخل</span>
+                      )}
                       {!alt.isCurrent && alt.conflicts && <span className="chip chip--danger">تداخل</span>}
                     </button>
                   </li>

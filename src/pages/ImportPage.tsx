@@ -156,7 +156,7 @@ export function ImportPage({ courses, onSave, onGoNext }: Props) {
             <h2 className="section-title" style={{ marginBottom: 0 }}>
               پیش‌نمایش قابل‌ویرایش
             </h2>
-            <span className="chip chip--sunk">
+            <span className="chip">
               {toFaDigits(rows.length)} ردیف · {toFaDigits(courseCount)} درس
             </span>
             {warnCount > 0 && (

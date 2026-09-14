@@ -47,7 +47,7 @@ export function CoursesPage({ courses, selected, onToggle, onClear, onGoNext }: 
           </h2>
           <span className="spacer" />
           <CreditMeter credits={credits} />
-          <span className="chip chip--sunk">{toFaDigits(selected.length)} درس</span>
+          <span className="chip">{toFaDigits(selected.length)} درس</span>
         </div>
 
         <div className="toolbar">

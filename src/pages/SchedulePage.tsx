@@ -73,7 +73,9 @@ export function SchedulePage(props: Props) {
     () => findExamClashes(selectedCourses, activePicks),
     [selectedCourses, activePicks],
   )
-  const credits = totalCredits(selectedCourses.filter((c) => activePicks[c.code]))
+  const pickedCourses = selectedCourses.filter((c) => activePicks[c.code])
+  const credits = totalCredits(pickedCourses)
+  const placedCourseCount = pickedCourses.length
 
   const registerRef = useCallback((code: string, el: HTMLDivElement | null) => {
     if (el) detailRefs.current.set(code, el)
@@ -131,39 +133,51 @@ export function SchedulePage(props: Props) {
 
   return (
     <div className="page">
-      {/* نوار حالت — همیشه در دسترس */}
-      <div className="card card--flat">
-        <div className="row row--wrap">
-          <div className="tabs" role="group" aria-label="حالت چیدن برنامه">
-            <button
-              type="button"
-              className={`tabs__btn${mode === 'auto' ? ' is-active' : ''}`}
-              onClick={() => onModeChange('auto')}
-              aria-pressed={mode === 'auto'}
-            >
-              حالت خودکار
-            </button>
-            <button
-              type="button"
-              className={`tabs__btn${mode === 'manual' ? ' is-active' : ''}`}
-              onClick={() => onModeChange('manual')}
-              aria-pressed={mode === 'manual'}
-            >
-              حالت دستی
-            </button>
-          </div>
-          <span className="spacer" />
+      {/* خلاصه‌ی وضعیت پیش از جزئیات — تاگل حالت همیشه در دسترس */}
+      <div className="summary">
+        <div className="tabs" role="group" aria-label="حالت چیدن برنامه">
           <button
             type="button"
-            className={`btn btn--sm${considerExams ? ' is-active' : ''}`}
-            onClick={() => onConsiderExamsChange(!considerExams)}
-            aria-pressed={considerExams}
-            title="تداخل تاریخ و ساعت امتحان هم مانع ساخت ترکیب شود"
+            className={`tabs__btn${mode === 'auto' ? ' is-active' : ''}`}
+            onClick={() => onModeChange('auto')}
+            aria-pressed={mode === 'auto'}
           >
-            احتساب تداخل امتحان
+            حالت خودکار
           </button>
-          <CreditMeter credits={credits} label="واحد این برنامه" />
+          <button
+            type="button"
+            className={`tabs__btn${mode === 'manual' ? ' is-active' : ''}`}
+            onClick={() => onModeChange('manual')}
+            aria-pressed={mode === 'manual'}
+          >
+            حالت دستی
+          </button>
         </div>
+
+        <span className="chip">{toFaDigits(placedCourseCount)} درس در برنامه</span>
+
+        {clashes.length > 0 ? (
+          <span className="chip chip--danger">{toFaDigits(clashes.length)} تداخل زمانی</span>
+        ) : (
+          <span className="chip chip--good">بدون تداخل زمانی</span>
+        )}
+
+        {examClashes.length > 0 && (
+          <span className="chip chip--warn">{toFaDigits(examClashes.length)} تداخل امتحان</span>
+        )}
+
+        <span className="spacer" />
+
+        <button
+          type="button"
+          className={`btn btn--sm${considerExams ? ' is-active' : ''}`}
+          onClick={() => onConsiderExamsChange(!considerExams)}
+          aria-pressed={considerExams}
+          title="تداخل تاریخ و ساعت امتحان هم مانع ساخت ترکیب شود"
+        >
+          احتساب تداخل امتحان
+        </button>
+        <CreditMeter credits={credits} label="واحد این برنامه" />
       </div>
 
       {mode === 'auto' && combos.length > 0 && (
@@ -205,29 +219,41 @@ export function SchedulePage(props: Props) {
             </p>
           )}
 
-          <div className="combo-strip">
-            {combos.slice(0, shown).map((combo, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`combo-card${i === safeIndex ? ' is-active' : ''}`}
-                onClick={() => setComboIndex(i)}
-                aria-pressed={i === safeIndex}
-                aria-label={`ترکیب ${i + 1}`}
-              >
-                <WeeklyGrid placed={placedSessions(selectedCourses, combo.picks)} mini />
-                <span className="combo-card__label">ترکیب {toFaDigits(i + 1)}</span>
-              </button>
-            ))}
-          </div>
+          {/* ریلِ ترکیب‌ها کنارِ جدولِ همان ترکیب، تا مقایسه و انتخاب یک‌جا باشد */}
+          <div className="plan">
+            <div className="plan__rail">
+              <div className="combo-strip">
+                {combos.slice(0, shown).map((combo, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`combo-card${i === safeIndex ? ' is-active' : ''}`}
+                    onClick={() => setComboIndex(i)}
+                    aria-pressed={i === safeIndex}
+                    aria-label={`ترکیب ${i + 1}`}
+                  >
+                    <WeeklyGrid placed={placedSessions(selectedCourses, combo.picks)} mini />
+                    <span className="combo-card__label">ترکیب {toFaDigits(i + 1)}</span>
+                  </button>
+                ))}
+              </div>
 
-          {shown < combos.length && (
-            <div className="row" style={{ marginTop: 14, justifyContent: 'center' }}>
-              <button type="button" className="btn" onClick={() => setShown((n) => n + PAGE * 2)}>
-                نمایش بیشتر ({toFaDigits(combos.length - shown)} ترکیب دیگر)
-              </button>
+              {shown < combos.length && (
+                <button
+                  type="button"
+                  className="btn btn--sm"
+                  style={{ width: '100%' }}
+                  onClick={() => setShown((n) => n + PAGE * 2)}
+                >
+                  نمایش بیشتر ({toFaDigits(combos.length - shown)} ترکیب دیگر)
+                </button>
+              )}
             </div>
-          )}
+
+            <div className="plan__grid fade-swap" key={`auto-${safeIndex}`}>
+              {grid}
+            </div>
+          </div>
         </div>
       )}
 
@@ -290,20 +316,20 @@ export function SchedulePage(props: Props) {
             </Notice>
           )}
 
-          <div className="card fade-swap" key={`grid-${mode}-${safeIndex}`}>
-            <div className="row row--wrap" style={{ marginBottom: 14 }}>
-              <h2 className="section-title" style={{ marginBottom: 0 }}>
-                جدول هفتگی
-              </h2>
-              <span className="spacer" />
-              {mode === 'manual' && (
+          {mode === 'manual' && (
+            <div className="card">
+              <div className="row row--wrap" style={{ marginBottom: 14 }}>
+                <h2 className="section-title" style={{ marginBottom: 0 }}>
+                  جدول هفتگی
+                </h2>
+                <span className="spacer" />
                 <button type="button" className="btn btn--sm" onClick={() => setFullscreen(true)}>
                   نمایش تمام‌صفحه
                 </button>
-              )}
+              </div>
+              {grid}
             </div>
-            {grid}
-          </div>
+          )}
 
           <div>
             <h2 className="section-title" style={{ marginBottom: 12 }}>
