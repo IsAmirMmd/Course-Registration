@@ -1,0 +1,487 @@
+.app {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 22px 18px 64px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand__title {
+  font-size: 19px;
+  letter-spacing: -0.2px;
+}
+
+.brand__sub {
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+/* ناوبری: قرص فرورفته، قلم فعال برجسته */
+.tabs {
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+  border-radius: var(--r-pill);
+  background: var(--sunk-bg);
+  box-shadow: var(--sink-2);
+}
+
+.tabs__btn {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 8px 16px;
+  border-radius: var(--r-pill);
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition:
+    box-shadow var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
+}
+
+.tabs__btn:hover { color: var(--text-soft); }
+
+.tabs__btn.is-active {
+  background: var(--surface);
+  box-shadow: var(--raise-1);
+  color: var(--accent);
+}
+
+.tabs__badge {
+  margin-inline-start: 6px;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.page { display: flex; flex-direction: column; gap: 18px; }
+
+.section-title {
+  font-size: 15.5px;
+  margin-bottom: 4px;
+}
+
+.section-hint {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+  line-height: 1.85;
+}
+
+/* جمع واحد — همیشه دیده می‌شود */
+.credit-meter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: var(--r-pill);
+  box-shadow: var(--sink-1);
+  background: var(--sunk-bg);
+}
+
+.credit-meter__num {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.credit-meter__label { font-size: 12.5px; color: var(--text-dim); }
+
+/* فهرست درس‌ها */
+.course-list {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.course-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 15px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--raise-1);
+  cursor: pointer;
+  text-align: start;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  transition:
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+  width: 100%;
+}
+
+.course-row:active { transform: scale(0.99); }
+.course-row.is-on { box-shadow: var(--sink-2); }
+
+.course-row__body { flex: 1 1 auto; min-width: 0; }
+
+.course-row__name {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.course-row.is-on .course-row__name { color: var(--accent); }
+
+.course-row__meta {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 3px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* چک‌باکس نئومورفیک */
+.tick {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: var(--surface);
+  box-shadow: var(--raise-1);
+  display: grid;
+  place-items: center;
+  margin-top: 3px;
+  transition: box-shadow var(--dur) var(--ease);
+}
+
+.tick svg { opacity: 0; transition: opacity var(--dur) var(--ease); }
+.tick.is-on { box-shadow: var(--sink-1); }
+.tick.is-on svg { opacity: 1; }
+
+/* نوار ابزار جست‌وجو/فیلتر */
+.toolbar {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(200px, 2fr) minmax(140px, 1fr) minmax(140px, 1fr);
+}
+
+/* ترکیب‌های پیشنهادی */
+/* نوار ترکیب‌ها: کارت‌ها عرض ثابت دارند تا با ۲ ترکیب هم کشیده و بدقامت نشوند */
+.combo-strip {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, 138px);
+  justify-content: start;
+}
+
+/* انتخاب دستی گروه: برچسب و کشوی هر درس در یک کارتِ برجسته، تا جفت‌بودنشان پیدا باشد */
+.pick-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+}
+
+.pick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 13px;
+  border-radius: var(--r-md);
+  box-shadow: var(--raise-1);
+}
+
+.pick__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+}
+
+.pick__credits {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.pick__select {
+  width: 150px;
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  padding-inline-end: 30px;
+}
+
+.combo-card {
+  border: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 9px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--raise-1);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  transition:
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.combo-card:hover { box-shadow: var(--raise-2); }
+.combo-card:active { transform: scale(0.98); }
+.combo-card.is-active { box-shadow: var(--sink-2); }
+
+.combo-card__label {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.combo-card.is-active .combo-card__label { color: var(--accent); font-weight: 700; }
+
+.combo-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.combo-nav__pos {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 7px 15px;
+  border-radius: var(--r-pill);
+  box-shadow: var(--sink-1);
+  background: var(--sunk-bg);
+  color: var(--text-soft);
+}
+
+/* کارت جزئیات درس */
+.detail-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+}
+
+.detail {
+  padding: 15px 17px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--raise-1);
+  scroll-margin-top: 20px;
+  transition: box-shadow var(--dur) var(--ease);
+}
+
+.detail.is-focus { box-shadow: var(--raise-3); }
+
+.detail__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.detail__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--r-pill);
+  flex: 0 0 auto;
+  margin-top: 8px;
+}
+
+.detail__name { font-weight: 700; font-size: 14.5px; line-height: 1.5; }
+.detail__sub { font-size: 12.5px; color: var(--text-dim); margin-top: 2px; }
+
+.detail__sessions {
+  margin: 11px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--text-soft);
+}
+
+.detail__sessions li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.detail__day {
+  min-width: 62px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.alt-toggle {
+  margin-top: 12px;
+  width: 100%;
+  justify-content: space-between;
+  padding-inline: 14px;
+}
+
+.alt-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.alt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  padding: 9px 12px;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  box-shadow: var(--raise-1);
+  cursor: pointer;
+  transition:
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.alt:active { transform: scale(0.99); }
+.alt.is-current { box-shadow: var(--sink-2); }
+.alt.is-current .alt__no { color: var(--accent); }
+
+.alt.is-clash {
+  background-image: repeating-linear-gradient(-45deg, var(--danger-soft) 0 6px, transparent 6px 12px);
+}
+
+.alt__no {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  min-width: 26px;
+}
+
+.alt__body { flex: 1 1 auto; min-width: 0; }
+.alt__time { font-size: 12px; color: var(--text-soft); }
+.alt__who { font-size: 11.5px; color: var(--text-dim); }
+
+/* پیش‌نمایش ایمپورت */
+.preview-wrap {
+  overflow-x: auto;
+  border-radius: var(--r-md);
+  background: var(--sunk-bg);
+  box-shadow: var(--sink-2);
+  padding: 4px;
+}
+
+.preview {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+  font-size: 12.5px;
+  min-width: 940px;
+}
+
+.preview th {
+  text-align: start;
+  padding: 8px 10px;
+  color: var(--text-dim);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.preview td {
+  padding: 3px 4px;
+  background: var(--surface);
+  vertical-align: top;
+}
+
+.preview tr td:first-child { border-start-start-radius: var(--r-sm); border-end-start-radius: var(--r-sm); }
+.preview tr td:last-child { border-start-end-radius: var(--r-sm); border-end-end-radius: var(--r-sm); }
+.preview tr.has-warn td { background: var(--warn-soft); }
+
+.cell-input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 7px 8px;
+  border-radius: 8px;
+  font: inherit;
+  color: inherit;
+  transition: box-shadow var(--dur) var(--ease);
+}
+
+.cell-input:focus { box-shadow: var(--sink-1); outline: none; }
+.cell-input--code { font-variant-numeric: tabular-nums; }
+
+textarea.cell-input {
+  resize: vertical;
+  min-height: 62px;
+  line-height: 1.7;
+  font-size: 11.5px;
+}
+
+.w-code { width: 108px; }
+.w-grp { width: 64px; }
+.w-num { width: 62px; }
+.w-time { min-width: 230px; }
+.w-exam { width: 120px; }
+
+/* تمام‌صفحه */
+.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--bg);
+  padding: 18px;
+  overflow: auto;
+}
+
+.fullscreen__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.footer-note {
+  margin-top: 30px;
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 2;
+}
+
+@media (max-width: 720px) {
+  .app { padding: 16px 12px 52px; }
+  .toolbar { grid-template-columns: 1fr; }
+  .course-list, .detail-grid, .pick-grid { grid-template-columns: 1fr; }
+  .combo-strip { grid-template-columns: repeat(auto-fill, 104px); }
+  .wg { --px-per-min: 0.85; --time-col: 46px; }
+  .brand__title { font-size: 17px; }
+  .tabs { width: 100%; justify-content: space-between; }
+  .tabs__btn { padding: 8px 10px; font-size: 12.5px; }
+}

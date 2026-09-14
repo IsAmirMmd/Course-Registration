@@ -1,0 +1,177 @@
+.wg {
+  --px-per-min: 1.05;
+  --time-col: 62px;
+  display: grid;
+  grid-template-columns: var(--time-col) 1fr;
+  gap: 10px;
+}
+
+.wg--mini {
+  --px-per-min: 0.2;
+  --time-col: 0px;
+  gap: 4px;
+  grid-template-columns: 1fr;
+}
+
+.wg__days {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.wg--mini .wg__days { gap: 3px; }
+
+.wg__head {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+.wg__dayname {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-soft);
+  padding: 6px 0;
+  border-radius: var(--r-sm);
+  box-shadow: var(--raise-1);
+}
+
+.wg--mini .wg__dayname {
+  font-size: 8px;
+  padding: 1px 0;
+  box-shadow: none;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.wg__body {
+  display: contents;
+}
+
+.wg__hours {
+  position: relative;
+  border-radius: var(--r-md);
+}
+
+.wg__hour {
+  position: absolute;
+  inset-inline: 0;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  text-align: center;
+  transform: translateY(-50%);
+  font-variant-numeric: tabular-nums;
+}
+
+.wg__day {
+  position: relative;
+  background: var(--sunk-bg);
+  border-radius: var(--r-md);
+  box-shadow: var(--sink-2);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.wg--mini .wg__day {
+  border-radius: 5px;
+  box-shadow: var(--sink-1);
+}
+
+/* خطوط ساعت: فقط یک نشانه‌ی ملایم، بدون بوردر تیز */
+.wg__line {
+  position: absolute;
+  inset-inline: 0;
+  height: 1px;
+  background: var(--lo);
+  opacity: 0.35;
+}
+
+.wg__block {
+  position: absolute;
+  border: 0;
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  box-shadow: var(--raise-1);
+  color: var(--text);
+  text-align: start;
+  overflow: hidden;
+  cursor: pointer;
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  transition:
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.wg__block::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 4px;
+  border-radius: var(--r-pill);
+  background: var(--block-tint, var(--accent));
+}
+
+.wg__block:hover { box-shadow: var(--raise-2); }
+.wg__block:active { box-shadow: var(--sink-1); transform: scale(0.98); }
+
+.wg__block.is-selected { box-shadow: var(--sink-2); }
+
+/* تداخل: هاشور ملایم + حاشیه‌ی هم‌رنگِ هشدار (بدون درخشش) */
+.wg__block.is-clash {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--danger-soft) 0 6px,
+    transparent 6px 12px
+  );
+  box-shadow: var(--raise-1), inset 0 0 0 1.5px var(--danger);
+}
+
+.wg__block-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.wg__block-meta {
+  font-size: 10.5px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wg--mini .wg__block {
+  padding: 0;
+  border-radius: 3px;
+  box-shadow: none;
+  background: var(--block-tint, var(--accent));
+  opacity: 0.85;
+  cursor: inherit;
+}
+
+.wg--mini .wg__block::before { display: none; }
+.wg--mini .wg__block.is-clash {
+  background-image: repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.35) 0 2px, transparent 2px 4px);
+  box-shadow: inset 0 0 0 1px var(--danger);
+}
+
+.wg__empty {
+  padding: 28px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 13.5px;
+}

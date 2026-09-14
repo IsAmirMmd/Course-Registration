@@ -1,0 +1,89 @@
+/* ───────────────────────── سیستم طراحی نئومورفیسم ─────────────────────────
+   پس‌زمینه و کارت‌ها هم‌رنگ‌اند؛ عمق فقط از دو سایه می‌آید:
+   روشن از بالا-چپ، تیره از پایین-راست. هیچ گرادیان و درخشش نئونی نداریم. */
+
+:root {
+  color-scheme: light;
+
+  /* میان‌تنِ بژ-خاکستری: نه سفید خالص، نه سیاه خالص */
+  --bg: #e7e4de;
+  --surface: #e7e4de;
+  --sunk-bg: #e3e0d9;
+
+  --hi: #f6f4f0; /* سایه‌ی روشن */
+  --lo: #c5c1b8; /* سایه‌ی تیره */
+
+  --text: #4e4a43;
+  --text-soft: #6d685f;
+  --text-dim: #928c82;
+
+  /* تنها رنگ تاکیدی — فقط برای اکشن اصلی و حالت انتخاب */
+  --accent: #4f7d70;
+  --accent-ink: #f3f6f4;
+  --accent-soft: rgba(79, 125, 112, 0.14);
+  --accent-line: rgba(79, 125, 112, 0.45);
+
+  --warn: #9c6b3f;
+  --warn-soft: rgba(156, 107, 63, 0.14);
+  --danger: #9e564b;
+  --danger-soft: rgba(158, 86, 75, 0.14);
+
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --r-pill: 999px;
+
+  /* برجسته */
+  --raise-1: -2px -2px 5px var(--hi), 2px 2px 5px var(--lo);
+  --raise-2: -4px -4px 9px var(--hi), 4px 4px 9px var(--lo);
+  --raise-3: -7px -7px 16px var(--hi), 7px 7px 16px var(--lo);
+  /* فرورفته */
+  --sink-1: inset 2px 2px 4px var(--lo), inset -2px -2px 4px var(--hi);
+  --sink-2: inset 4px 4px 8px var(--lo), inset -4px -4px 8px var(--hi);
+  --sink-3: inset 6px 6px 12px var(--lo), inset -6px -6px 12px var(--hi);
+
+  --dur: 200ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #33363a;
+    --surface: #33363a;
+    --sunk-bg: #303338;
+    --hi: #3f4348;
+    --lo: #26282b;
+    --text: #dcd8d1;
+    --text-soft: #b6b1a9;
+    --text-dim: #8e8a83;
+    --accent: #79ab9b;
+    --accent-ink: #1e2422;
+    --accent-soft: rgba(121, 171, 155, 0.18);
+    --accent-line: rgba(121, 171, 155, 0.5);
+    --warn: #c99a66;
+    --warn-soft: rgba(201, 154, 102, 0.16);
+    --danger: #c98277;
+    --danger-soft: rgba(201, 130, 119, 0.16);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #33363a;
+  --surface: #33363a;
+  --sunk-bg: #303338;
+  --hi: #3f4348;
+  --lo: #26282b;
+  --text: #dcd8d1;
+  --text-soft: #b6b1a9;
+  --text-dim: #8e8a83;
+  --accent: #79ab9b;
+  --accent-ink: #1e2422;
+  --accent-soft: rgba(121, 171, 155, 0.18);
+  --accent-line: rgba(121, 171, 155, 0.5);
+  --warn: #c99a66;
+  --warn-soft: rgba(201, 154, 102, 0.16);
+  --danger: #c98277;
+  --danger-soft: rgba(201, 130, 119, 0.16);
+}
