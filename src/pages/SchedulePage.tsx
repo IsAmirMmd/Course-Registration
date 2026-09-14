@@ -8,11 +8,13 @@ import { WeeklyGrid } from '../components/WeeklyGrid'
 import { CourseDetail } from '../components/CourseDetail'
 import { Diagnosis } from '../components/Diagnosis'
 import { CreditMeter, Notice } from '../components/ui'
-import { ExportImageButtons } from '../components/ExportImageButtons'
+import { ExportButtons } from '../components/ExportButtons'
 import type { PlannerMode } from '../lib/storage'
 
 interface Props {
   selectedCourses: Course[]
+  /** کل درس‌های ارائه‌شده — برای برگه‌ی «همه درس‌ها» در خروجی اکسل */
+  catalogue: Course[]
   mode: PlannerMode
   onModeChange: (mode: PlannerMode) => void
   manualPicks: Picks
@@ -30,6 +32,7 @@ const SOLVE_LIMIT = 500
 export function SchedulePage(props: Props) {
   const {
     selectedCourses,
+    catalogue,
     mode,
     onModeChange,
     manualPicks,
@@ -227,9 +230,10 @@ export function SchedulePage(props: Props) {
               بعدی
             </button>
             <span className="spacer" />
-            <ExportImageButtons
+            <ExportButtons
               placed={placed}
               entries={imageEntries}
+              catalogue={catalogue}
               meta={imageMeta}
               filename={imageFile}
             />
@@ -349,9 +353,10 @@ export function SchedulePage(props: Props) {
                   جدول هفتگی
                 </h2>
                 <span className="spacer" />
-                <ExportImageButtons
+                <ExportButtons
                   placed={placed}
                   entries={imageEntries}
+                  catalogue={catalogue}
                   meta={imageMeta}
                   filename={imageFile}
                 />
@@ -415,9 +420,10 @@ export function SchedulePage(props: Props) {
             )}
             <CreditMeter credits={credits} label="واحد" />
             <span className="spacer" />
-            <ExportImageButtons
+            <ExportButtons
               placed={placed}
               entries={imageEntries}
+              catalogue={catalogue}
               meta={imageMeta}
               filename={imageFile}
             />

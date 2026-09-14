@@ -651,3 +651,90 @@ textarea.cell-input {
   .tabs { width: 100%; }
   .tabs__btn { flex: 1 1 0; padding: 7px 8px; font-size: var(--t-xs); }
 }
+
+/* ───────────────────── کدِ قابل‌کپی با یک کلیک ───────────────────── */
+
+.code-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  transition:
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.code-copy:hover {
+  border-style: solid;
+  border-color: var(--primary);
+  background: var(--primary-weak);
+  color: var(--primary);
+}
+
+.code-copy.is-done {
+  border-style: solid;
+  border-color: var(--good-line);
+  background: var(--good-weak);
+  color: var(--good);
+}
+
+.code-copy.is-error {
+  border-style: solid;
+  border-color: var(--crit-line);
+  background: var(--crit-weak);
+  color: var(--crit);
+}
+
+.code-copy__label {
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.code-copy__value {
+  letter-spacing: 0.02em;
+}
+
+.code-copy__icon {
+  display: inline-flex;
+  opacity: 0.55;
+}
+
+.code-copy:hover .code-copy__icon,
+.code-copy.is-done .code-copy__icon,
+.code-copy.is-error .code-copy__icon {
+  opacity: 1;
+}
+
+/* ناحیه‌ی انتخابِ ردیف درس — جدا از دکمه‌ی کپی، تا دکمه در دکمه جا نگیرد */
+.course-row__pick {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  flex: 1 1 auto;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.course-row:has(.course-row__pick input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.detail__ids {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}

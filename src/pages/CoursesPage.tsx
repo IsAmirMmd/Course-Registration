@@ -4,6 +4,7 @@ import { ALL_DAYS, DAY_NAMES } from '../lib/days'
 import { normalizeFa, toFaDigits } from '../lib/digits'
 import { faTime } from '../lib/time'
 import { CreditMeter, Notice, Tick } from '../components/ui'
+import { CopyCode } from '../components/CopyCode'
 
 interface Props {
   courses: Course[]
@@ -114,43 +115,44 @@ export function CoursesPage({ courses, selected, onToggle, onClear, onGoNext }: 
           const on = selectedSet.has(course.code)
           const noFixedTime = course.groups.every((g) => g.sessions.length === 0)
           return (
-            <button
-              key={course.code}
-              type="button"
-              className={`course-row${on ? ' is-on' : ''}`}
-              onClick={() => onToggle(course.code)}
-              aria-pressed={on}
-            >
-              <Tick on={on} />
-              <span className="course-row__body">
-                <span className="course-row__name">{course.name}</span>
-                <span className="course-row__meta">
-                  <span>{toFaDigits(course.credits)} واحد</span>
-                  <span>
-                    {toFaDigits(course.groups.length)} گروه
+            <div key={course.code} className={`course-row${on ? ' is-on' : ''}`}>
+              {/* برچسب + چک‌باکسِ پنهان: دکمه‌ی کپی نباید داخل یک دکمه‌ی دیگر باشد */}
+              <label className="course-row__pick">
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={on}
+                  onChange={() => onToggle(course.code)}
+                />
+                <Tick on={on} />
+                <span className="course-row__body">
+                  <span className="course-row__name">{course.name}</span>
+                  <span className="course-row__meta">
+                    <span>{toFaDigits(course.credits)} واحد</span>
+                    <span>{toFaDigits(course.groups.length)} گروه</span>
+                    {course.exam && <span className="num">امتحان {toFaDigits(course.exam.date)}</span>}
+                    {noFixedTime && <span>بدون زمان ثابت</span>}
                   </span>
-                  <span className="num">کد {toFaDigits(course.code)}</span>
-                  {course.exam && <span className="num">امتحان {toFaDigits(course.exam.date)}</span>}
-                  {noFixedTime && <span>بدون زمان ثابت</span>}
+                  <span className="course-row__meta">
+                    {course.groups.slice(0, 3).map((g) => (
+                      <span key={g.id}>
+                        {g.instructor || 'بدون استاد'}
+                        {g.sessions.length > 0 && (
+                          <span className="num">
+                            {' · '}
+                            {g.sessions
+                              .map((s) => `${DAY_NAMES[s.day]} ${faTime(s.start)}`)
+                              .join('، ')}
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                    {course.groups.length > 3 && <span>…</span>}
+                  </span>
                 </span>
-                <span className="course-row__meta">
-                  {course.groups.slice(0, 3).map((g) => (
-                    <span key={g.id}>
-                      {g.instructor || 'بدون استاد'}
-                      {g.sessions.length > 0 && (
-                        <span className="num">
-                          {' · '}
-                          {g.sessions
-                            .map((s) => `${DAY_NAMES[s.day]} ${faTime(s.start)}`)
-                            .join('، ')}
-                        </span>
-                      )}
-                    </span>
-                  ))}
-                  {course.groups.length > 3 && <span>…</span>}
-                </span>
-              </span>
-            </button>
+              </label>
+              <CopyCode value={course.code} label="کد" title={`کپی کد درس ${course.code}`} />
+            </div>
           )
         })}
       </div>

@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "check": "rolldown tools/check/run.ts --format esm -o node_modules/.cache/check.mjs && node node_modules/.cache/check.mjs"
+    "check": "rolldown tools/check/run.ts --format esm -o node_modules/.cache/check.mjs && node node_modules/.cache/check.mjs",
+    "check:xlsx": "rolldown tools/check/xlsx.ts --format esm --platform node -o node_modules/.cache/xlsx.mjs && node node_modules/.cache/xlsx.mjs sample.xlsx"
   },
   "dependencies": {
     "react": "^19.2.8",

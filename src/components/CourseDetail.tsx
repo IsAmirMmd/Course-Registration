@@ -6,6 +6,7 @@ import { toFaDigits } from '../lib/digits'
 import { faTime } from '../lib/time'
 import { alternativesFor } from '../lib/solver'
 import { Chevron, Collapse } from './ui'
+import { CopyCode } from './CopyCode'
 
 interface Props {
   course: Course
@@ -42,9 +43,18 @@ export function CourseDetail({ course, courses, picks, focused, onPickGroup, reg
         />
         <div style={{ minWidth: 0, flex: '1 1 auto' }}>
           <div className="detail__name">{course.name}</div>
-          <div className="detail__sub">
-            {toFaDigits(course.credits)} واحد · کد {toFaDigits(course.code)}
-            {group ? ` · گروه ${toFaDigits(group.groupNo ?? '')}` : ''}
+          <div className="detail__sub detail__ids">
+            <span>{toFaDigits(course.credits)} واحد</span>
+            {/* همان کدی که در سیستم انتخاب‌واحد وارد می‌شود — یک کلیک، کپی */}
+            {group ? (
+              <CopyCode
+                value={group.id}
+                label="کد گروه"
+                title={`کپی «${group.id}» برای ورود در سیستم انتخاب واحد`}
+              />
+            ) : (
+              <CopyCode value={course.code} label="کد درس" title={`کپی کد درس ${course.code}`} />
+            )}
           </div>
           {group?.instructor && <div className="detail__sub">{group.instructor}</div>}
         </div>
@@ -127,7 +137,7 @@ export function CourseDetail({ course, courses, picks, focused, onPickGroup, reg
                         </span>
                         {alt.group.instructor && <span className="alt__who"> · {alt.group.instructor}</span>}
                         {alt.conflicts && (
-                          <span className="alt__who" style={{ color: 'var(--danger)' }}>
+                          <span className="alt__who" style={{ color: 'var(--crit)' }}>
                             {' '}
                             · تداخل با {clashNames}
                           </span>

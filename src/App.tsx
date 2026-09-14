@@ -173,6 +173,7 @@ export default function App() {
       {tab === 'schedule' && (
         <SchedulePage
           selectedCourses={selectedCourses}
+          catalogue={courses}
           mode={mode}
           onModeChange={setMode}
           manualPicks={manualPicks}

@@ -7,7 +7,7 @@ export function Tick({ on }: { on: boolean }) {
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
         <path
           d="M2 6.4 4.6 9 10 3.2"
-          stroke="var(--accent)"
+          stroke="var(--primary-ink)"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"

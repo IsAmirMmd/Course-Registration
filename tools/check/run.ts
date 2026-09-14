@@ -6,6 +6,10 @@ import { formatSessions, parseSessionsText } from '../../src/lib/sessionText'
 import { diagnose, solve, alternativesFor } from '../../src/lib/solver'
 import { findClashes, placedSessions, totalCredits } from '../../src/lib/conflicts'
 import { fitText, wrapText, type TextMeasurer } from '../../src/lib/exportImage'
+import { allGroupCodes, colName } from '../../src/lib/exportExcel'
+import { createZip, utf8 } from '../../src/lib/zip'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
 
 let fails = 0
 function stable(value: unknown): string {
@@ -159,6 +163,73 @@ eq('کلمه‌ی جامانده علامت می‌خورد', wrapText(measurer,
 // تک‌کلمه‌ی بلندتر از عرض هم باید چیزی برگرداند
 eq('تک‌کلمه‌ی بلند خالی برنمی‌گردد', wrapText(measurer, 'abcdefghij', 50, 1), ['abcd…'])
 eq('متن خالی', wrapText(measurer, '   ', 50, 2), [])
+
+// ── حرف ستون در اکسل
+eq('ستون A', colName(1), 'A')
+eq('ستون Z', colName(26), 'Z')
+eq('ستون AA', colName(27), 'AA')
+eq('ستون AB', colName(28), 'AB')
+eq('ستون AZ', colName(52), 'AZ')
+eq('ستون BA', colName(53), 'BA')
+
+// ── نویسنده‌ی ZIP: ساختار آرشیو درست است
+const zip = createZip(
+  [
+    { path: 'a.txt', data: utf8('سلام') },
+    { path: 'dir/b.xml', data: utf8('<x/>') },
+  ],
+  new Date('2026-09-14T10:30:00Z'),
+)
+const sig = (at: number) => zip[at] | (zip[at + 1] << 8) | (zip[at + 2] << 16) | (zip[at + 3] << 24)
+eq('سرصفحه‌ی محلی در ابتدا', sig(0) >>> 0, 0x04034b50)
+// پایانِ فهرست مرکزی: ۲۲ بایت آخر (بدون توضیح)
+const eocd = zip.length - 22
+eq('امضای پایان فهرست', sig(eocd) >>> 0, 0x06054b50)
+eq('تعداد مدخل‌ها', zip[eocd + 10] | (zip[eocd + 11] << 8), 2)
+eq('امضای فهرست مرکزی هست', Array.from(zip).some((_, i) => i + 4 <= zip.length && (sig(i) >>> 0) === 0x02014b50), true)
+// نامِ فایل با پرچم UTF-8 نوشته شده (بیت ۱۱ در پرچم‌های عمومی)
+eq('پرچم UTF-8 نام فایل', (zip[6] | (zip[7] << 8)) & 0x0800, 0x0800)
+eq('روش ذخیره = store', zip[8] | (zip[9] << 8), 0)
+
+// ── کپی یک‌جای کدهای گروه: همان چیزی که در سیستم آموزش وارد می‌شود
+const codesTerm = ['1221005', '1221019'].map(byCode)
+eq(
+  'کدهای گروه، هر کدام یک خط',
+  allGroupCodes(codesTerm.map((c) => ({ course: c, group: c.groups[0] }))),
+  '1221005_01\n1221019_01',
+)
+eq('کدها ارقام لاتین‌اند', /^[0-9_\n]+$/.test(allGroupCodes(codesTerm.map((c) => ({ course: c, group: c.groups[0] })))), true)
+
+// ── هر var(--x) باید جایی تعریف شده باشد.
+// این تست وجود دارد چون توکنی که در طراحی دوباره حذف شد، بی‌صدا رنگ را
+// از کار انداخت (تیکِ چک‌باکس نامرئی شده بود) و بیلد هم چیزی نگفت.
+function walk(dir: string): string[] {
+  const out: string[] = []
+  for (const item of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, item.name)
+    if (item.isDirectory()) out.push(...walk(full))
+    else if (/\.(css|tsx|ts)$/.test(item.name)) out.push(full)
+  }
+  return out
+}
+
+const sources = walk('src').map((f) => ({ file: f, text: readFileSync(f, 'utf8') }))
+const defined = new Set<string>()
+const used = new Map<string, string>()
+for (const { file, text } of sources) {
+  // تعریف در CSS: «--x:» — و تعریف درجا در TSX: «'--x'»
+  for (const m of text.matchAll(/(--[a-z0-9-]+)\s*:/g)) defined.add(m[1])
+  for (const m of text.matchAll(/'(--[a-z0-9-]+)'/g)) defined.add(m[1])
+  for (const m of text.matchAll(/var\(\s*(--[a-z0-9-]+)/g)) {
+    if (!used.has(m[1])) used.set(m[1], file)
+  }
+}
+const undefinedTokens = [...used.entries()].filter(([name]) => !defined.has(name))
+eq(
+  'همه‌ی توکن‌های CSS تعریف شده‌اند',
+  undefinedTokens.map(([name, file]) => `${name} (${file})`),
+  [],
+)
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAILED`)
 if (fails > 0) process.exit(1)

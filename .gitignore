@@ -27,3 +27,4 @@ lerna-debug.log*
 tools/raw_rows.json
 tools/__pycache__/
 pdf/
+sample.xlsx
