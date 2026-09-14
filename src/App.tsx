@@ -11,13 +11,15 @@ import {
   type PlannerMode,
   type PlannerState,
 } from './lib/storage'
+import type { AuditReport } from './lib/parseAudit'
 import { ImportPage } from './pages/ImportPage'
 import { CoursesPage } from './pages/CoursesPage'
 import { SchedulePage } from './pages/SchedulePage'
+import { AuditPage } from './pages/AuditPage'
 import { Notice } from './components/ui'
 import './App.css'
 
-type Tab = 'import' | 'courses' | 'schedule'
+type Tab = 'import' | 'audit' | 'courses' | 'schedule'
 
 export default function App() {
   // localStorage فقط یک بار، در همان اولین رندر، خوانده می‌شود
@@ -28,13 +30,14 @@ export default function App() {
   const [manualPicks, setManualPicks] = useState<Picks>(() => restored?.manualPicks ?? {})
   const [mode, setMode] = useState<PlannerMode>(() => restored?.mode ?? 'auto')
   const [considerExams, setConsiderExams] = useState(() => restored?.considerExams ?? true)
+  const [audit, setAudit] = useState<AuditReport | null>(() => restored?.audit ?? null)
   const [tab, setTab] = useState<Tab>(() => (restored?.selected?.length ? 'schedule' : 'courses'))
   const [flash, setFlash] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const state: PlannerState = useMemo(
-    () => ({ courses, selected, manualPicks, mode, considerExams }),
-    [courses, selected, manualPicks, mode, considerExams],
+    () => ({ courses, selected, manualPicks, mode, considerExams, audit }),
+    [courses, selected, manualPicks, mode, considerExams, audit],
   )
 
   useEffect(() => {
@@ -83,6 +86,7 @@ export default function App() {
       if (data.manualPicks) setManualPicks(data.manualPicks)
       if (data.mode) setMode(data.mode)
       if (typeof data.considerExams === 'boolean') setConsiderExams(data.considerExams)
+      if (data.audit !== undefined) setAudit(data.audit)
       setFlash('پشتیبان با موفقیت بازگردانی شد.')
     } catch {
       setFlash('فایل پشتیبان خوانده نشد — مطمئن شوید JSON معتبر است.')
@@ -106,6 +110,11 @@ export default function App() {
 
   const tabs: Array<{ id: Tab; label: string; badge?: string }> = [
     { id: 'import', label: 'افزودن درس‌ها', badge: toFaDigits(courses.length) },
+    {
+      id: 'audit',
+      label: 'کارنامه',
+      badge: audit ? toFaDigits(audit.passedCount) : undefined,
+    },
     { id: 'courses', label: 'انتخاب درس‌ها', badge: toFaDigits(selected.length) },
     { id: 'schedule', label: 'برنامه‌ی هفتگی' },
   ]
@@ -160,13 +169,26 @@ export default function App() {
         <ImportPage courses={courses} onSave={replaceCourses} onGoNext={() => setTab('courses')} />
       )}
 
+      {tab === 'audit' && (
+        <AuditPage
+          courses={courses}
+          report={audit}
+          onReport={setAudit}
+          selected={selected}
+          onToggle={toggleCourse}
+          onGoCourses={() => setTab('courses')}
+        />
+      )}
+
       {tab === 'courses' && (
         <CoursesPage
           courses={courses}
+          audit={audit}
           selected={selected}
           onToggle={toggleCourse}
           onClear={() => setSelected([])}
           onGoNext={() => setTab('schedule')}
+          onGoAudit={() => setTab('audit')}
         />
       )}
 

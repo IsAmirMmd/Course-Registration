@@ -8,6 +8,16 @@ import { findClashes, placedSessions, totalCredits } from '../../src/lib/conflic
 import { fitText, wrapText, type TextMeasurer } from '../../src/lib/exportImage'
 import { allGroupCodes, colName } from '../../src/lib/exportExcel'
 import { createZip, utf8 } from '../../src/lib/zip'
+import {
+  buildStatus,
+  isDone,
+  makeGroup,
+  matchOffered,
+  planForGroups,
+  type AuditCourse,
+  type AuditGroup,
+  type AuditReport,
+} from '../../src/lib/parseAudit'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -230,6 +240,96 @@ eq(
   undefinedTokens.map(([name, file]) => `${name} (${file})`),
   [],
 )
+
+// ── قاعده‌ی «اشباع گروه» در کارنامه‌ی تطبیق
+function withCourses(group: AuditGroup, rows: Array<[string, boolean]>): AuditGroup {
+  group.courses = rows.map(([code, passed]) => ({
+    code,
+    name: code,
+    credits: 2,
+    passed,
+    groupId: group.id,
+  })) as AuditCourse[]
+  return group
+}
+
+// گروهی که حد پایینش پر شده: هر دو انتخاب را گرفته‌ام، ولی گروه ۵ گزینه دارد.
+// باید همه‌ی گزینه‌های نگرفته «بی‌نیاز» شوند، نه «لازم».
+const fullGroup = withCourses(
+  makeGroup('g1', 'اخلاق اسلامي', {
+    doneCourses: 1,
+    minCourses: 1,
+    maxCourses: 1,
+    doneCredits: 2,
+    minCredits: 2,
+    maxCredits: 2,
+  }),
+  [['1611007', true], ['1611004', false], ['1611005', false]],
+)
+const fullStatus = buildStatus([fullGroup])
+eq('گروهِ کامل: درسِ گرفته‌شده «پاس‌شده»', fullStatus['1611007'], 'passed')
+eq('گروهِ کامل: بقیه «بی‌نیاز»', [fullStatus['1611004'], fullStatus['1611005']], ['covered', 'covered'])
+eq('هر دو زیر دسته‌ی «انجام‌شده»', [isDone('passed'), isDone('covered')], [true, true])
+
+// گروهی که کمبود دارد: درس‌های نگرفته «لازم»اند
+const shortGroup = withCourses(
+  makeGroup('g2', 'دروس اصلي', {
+    doneCourses: 21,
+    minCourses: 24,
+    maxCourses: 24,
+    doneCredits: 55,
+    minCredits: 60,
+    maxCredits: 60,
+  }),
+  [['1221005', true], ['1221019', false], ['1221132', false]],
+)
+eq('گروهِ ناتمام شناسایی شد', shortGroup.satisfied, false)
+eq('کمبود واحد', shortGroup.missingCredits, 5)
+const shortStatus = buildStatus([shortGroup])
+eq('گروهِ ناتمام: نگرفته‌ها «لازم»', [shortStatus['1221019'], shortStatus['1221132']], ['needed', 'needed'])
+eq('لازم زیر «قابل اخذ» است', isDone('needed'), false)
+
+// گروهِ اختیاری با بازه: حد پایین صفر ولی سقف دارد → «اختیاری» نه «بی‌نیاز»
+const optionalGroup = withCourses(
+  makeGroup('g3', 'دروس تخصصي مشترك', {
+    doneCourses: 1,
+    minCourses: 0,
+    maxCourses: 6,
+    doneCredits: 3,
+    minCredits: 0,
+    maxCredits: 11,
+  }),
+  [['1221024', true], ['1221101', false]],
+)
+eq('گروهِ بازه‌دار پر است ولی جا دارد', [optionalGroup.satisfied, optionalGroup.hasRoom], [true, true])
+eq('گروهِ بازه‌دار: نگرفته «اختیاری»', buildStatus([optionalGroup])['1221101'], 'optional')
+
+// یک درس در دو گروه: سخت‌گیرانه‌ترین حالت برنده است
+const both = buildStatus([
+  withCourses(makeGroup('a', 'کامل', { doneCourses: 1, minCourses: 1, maxCourses: 1, doneCredits: 2, minCredits: 2, maxCredits: 2 }), [['9001', false]]),
+  withCourses(makeGroup('b', 'ناتمام', { doneCourses: 0, minCourses: 2, maxCourses: 2, doneCredits: 0, minCredits: 4, maxCredits: 4 }), [['9001', false]]),
+])
+eq('درسِ مشترک: «لازم» برنده می‌شود', both['9001'], 'needed')
+
+// تطبیق با درس‌های ارائه‌شده‌ی واقعی
+const auditReport: AuditReport = {
+  summary: {},
+  groups: [shortGroup],
+  status: shortStatus,
+  passedCount: 1,
+  warnings: [],
+}
+const offeredNeeded = matchOffered(SEED_COURSES, auditReport).filter((m) => m.status === 'needed')
+eq('درس‌های لازمِ ارائه‌شده', offeredNeeded.map((m) => m.course.code).sort(), ['1221019', '1221132'])
+eq(
+  'درس‌های بیرون از کارنامه «نامشخص»',
+  matchOffered(SEED_COURSES, auditReport).find((m) => m.course.code === '1211003')?.status,
+  'unknown',
+)
+const plan = planForGroups(SEED_COURSES, auditReport, true)
+eq('برنامه‌ی گروهِ ناتمام', plan.length, 1)
+eq('پیشنهادهای گروه', plan[0].offered.map((c) => c.code).sort(), ['1221019', '1221132'])
+eq('بدون کارنامه، همه نامشخص', matchOffered(SEED_COURSES, null).every((m) => m.status === 'unknown'), true)
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAILED`)
 if (fails > 0) process.exit(1)

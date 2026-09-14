@@ -234,7 +234,7 @@
 .toolbar {
   display: grid;
   gap: 10px;
-  grid-template-columns: minmax(200px, 2fr) minmax(150px, 1fr) minmax(140px, auto);
+  grid-template-columns: minmax(180px, 2fr) minmax(140px, 1fr) minmax(140px, 1fr) minmax(130px, auto);
 }
 
 /* ───────────────────── نوارِ خلاصه: چکیده پیش از جزئیات ───────────────────── */
@@ -648,8 +648,9 @@ textarea.cell-input {
   .combo-card { flex: 0 0 104px; }
   .wg { --px-per-min: 0.85; --time-col: 44px; }
   .brand__title { font-size: 1.1875rem; }
-  .tabs { width: 100%; }
-  .tabs__btn { flex: 1 1 0; padding: 7px 8px; font-size: var(--t-xs); }
+  /* با چهار بخش، یک ردیف در عرض تلفن جا نمی‌شود: بگذار بشکند */
+  .tabs { width: 100%; flex-wrap: wrap; }
+  .tabs__btn { flex: 1 1 44%; padding: 7px 8px; font-size: var(--t-xs); }
 }
 
 /* ───────────────────── کدِ قابل‌کپی با یک کلیک ───────────────────── */
@@ -737,4 +738,111 @@ textarea.cell-input {
   gap: 8px;
   flex-wrap: wrap;
   margin-top: 4px;
+}
+
+/* ───────────────────── کارنامه: پیشرفت گروه و ردیف درس ───────────────────── */
+
+.meter {
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.meter__fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--primary);
+  transition: width var(--dur) var(--ease);
+}
+
+.pick-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.pick-row,
+.audit-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  transition:
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
+}
+
+.pick-row.is-on,
+.audit-row.is-on {
+  background: var(--primary-weak);
+  border-color: var(--primary-line);
+}
+
+.audit-row.is-muted {
+  background: var(--surface-2);
+}
+
+.audit-list {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+}
+
+/* دکمه‌ی افزودن/حذف: مربعِ کوچکِ + و − */
+.pick-row__add {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.pick-row__add:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-ink);
+}
+
+.pick-row__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pick-row__name {
+  font-size: var(--t-sm);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.pick-row__meta {
+  font-size: var(--t-xs);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 760px) {
+  .pick-list,
+  .audit-list { grid-template-columns: 1fr; }
 }

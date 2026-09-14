@@ -5,20 +5,51 @@ import { normalizeFa, toFaDigits } from '../lib/digits'
 import { faTime } from '../lib/time'
 import { CreditMeter, Notice, Tick } from '../components/ui'
 import { CopyCode } from '../components/CopyCode'
+import {
+  isDone,
+  STATUS_LABEL,
+  type AuditReport,
+  type CourseAuditStatus,
+} from '../lib/parseAudit'
 
 interface Props {
   courses: Course[]
+  /** کارنامه‌ی تطبیق، اگر وارد شده باشد */
+  audit: AuditReport | null
   selected: string[]
   onToggle: (code: string) => void
   onClear: () => void
   onGoNext: () => void
+  onGoAudit: () => void
 }
 
+const STATUS_CHIP: Record<CourseAuditStatus, string> = {
+  passed: 'chip chip--good',
+  needed: 'chip chip--primary',
+  optional: 'chip',
+  covered: 'chip chip--quiet',
+  unknown: 'chip chip--quiet',
+}
+
+/** فیلترِ وضعیتِ کارنامه */
+type AuditFilter = 'all' | 'takeable' | 'needed' | 'done'
+
 /** صفحه‌ی «انتخاب درس‌های مورد نیاز» — با جست‌وجو و فیلتر استاد/روز */
-export function CoursesPage({ courses, selected, onToggle, onClear, onGoNext }: Props) {
+export function CoursesPage({
+  courses,
+  audit,
+  selected,
+  onToggle,
+  onClear,
+  onGoNext,
+  onGoAudit,
+}: Props) {
   const [query, setQuery] = useState('')
   const [day, setDay] = useState<'all' | DayIndex>('all')
   const [onlySelected, setOnlySelected] = useState(false)
+  const [auditFilter, setAuditFilter] = useState<AuditFilter>('all')
+
+  const statusOf = (code: string): CourseAuditStatus => audit?.status[code] ?? 'unknown'
 
   const selectedSet = useMemo(() => new Set(selected), [selected])
   const credits = useMemo(
@@ -30,6 +61,12 @@ export function CoursesPage({ courses, selected, onToggle, onClear, onGoNext }: 
     const q = normalizeFa(query).toLowerCase()
     return courses.filter((c) => {
       if (onlySelected && !selectedSet.has(c.code)) return false
+      if (audit && auditFilter !== 'all') {
+        const status = audit.status[c.code] ?? 'unknown'
+        if (auditFilter === 'takeable' && isDone(status)) return false
+        if (auditFilter === 'needed' && status !== 'needed') return false
+        if (auditFilter === 'done' && !isDone(status)) return false
+      }
       if (day !== 'all' && !c.groups.some((g) => g.sessions.some((s) => s.day === day))) return false
       if (!q) return true
       // جست‌وجو روی نام درس، نام استاد و کد درس
@@ -37,7 +74,7 @@ export function CoursesPage({ courses, selected, onToggle, onClear, onGoNext }: 
       if (c.code.includes(q)) return true
       return c.groups.some((g) => normalizeFa(g.instructor).toLowerCase().includes(q))
     })
-  }, [courses, query, day, onlySelected, selectedSet])
+  }, [courses, query, day, onlySelected, selectedSet, audit, auditFilter])
 
   return (
     <div className="page">
@@ -72,6 +109,23 @@ export function CoursesPage({ courses, selected, onToggle, onClear, onGoNext }: 
               </option>
             ))}
           </select>
+          {audit ? (
+            <select
+              className="field"
+              value={auditFilter}
+              onChange={(e) => setAuditFilter(e.target.value as AuditFilter)}
+              aria-label="فیلتر وضعیت کارنامه"
+            >
+              <option value="all">همه‌ی وضعیت‌ها</option>
+              <option value="takeable">فقط قابل اخذ</option>
+              <option value="needed">فقط لازم</option>
+              <option value="done">فقط پاس‌شده</option>
+            </select>
+          ) : (
+            <button type="button" className="btn" onClick={onGoAudit} title="کارنامه‌ی تطبیق را وارد کنید تا وضعیت هر درس مشخص شود">
+              وارد‌کردن کارنامه
+            </button>
+          )}
           <button
             type="button"
             className={`btn${onlySelected ? ' is-active' : ''}`}
@@ -151,6 +205,11 @@ export function CoursesPage({ courses, selected, onToggle, onClear, onGoNext }: 
                   </span>
                 </span>
               </label>
+              {audit && (
+                <span className={STATUS_CHIP[statusOf(course.code)]}>
+                  {STATUS_LABEL[statusOf(course.code)]}
+                </span>
+              )}
               <CopyCode value={course.code} label="کد" title={`کپی کد درس ${course.code}`} />
             </div>
           )

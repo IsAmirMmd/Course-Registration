@@ -1,4 +1,5 @@
 import type { Course, Picks } from '../types'
+import type { AuditReport } from './parseAudit'
 
 const KEY = 'scheduleplanner.v1'
 
@@ -10,6 +11,8 @@ export interface PlannerState {
   manualPicks: Picks
   mode: PlannerMode
   considerExams: boolean
+  /** کارنامه‌ی تطبیقِ خوانده‌شده (بدون هیچ داده‌ی هویتی) */
+  audit: AuditReport | null
 }
 
 export interface BackupFile {
@@ -45,6 +48,9 @@ function sanitize(input: Partial<PlannerState>): Partial<PlannerState> {
   if (input.manualPicks && typeof input.manualPicks === 'object') out.manualPicks = input.manualPicks
   if (input.mode === 'auto' || input.mode === 'manual') out.mode = input.mode
   if (typeof input.considerExams === 'boolean') out.considerExams = input.considerExams
+  if (input.audit && typeof input.audit === 'object' && Array.isArray(input.audit.groups)) {
+    out.audit = input.audit
+  }
   return out
 }
 
