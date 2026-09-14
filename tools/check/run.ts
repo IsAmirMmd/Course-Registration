@@ -93,8 +93,8 @@ eq('امتحان روی درس', built.courses[1].exam, { date: '1405/10/20', ti
 eq('بدون مشکل', built.problems, [])
 
 // ── داده‌ی واقعی
-eq('تعداد درس‌های seed', SEED_COURSES.length, 101)
-eq('تعداد گروه‌های seed', SEED_COURSES.reduce((n, c) => n + c.groups.length, 0), 197)
+eq('تعداد درس‌های seed', SEED_COURSES.length, 169)
+eq('تعداد گروه‌های seed', SEED_COURSES.reduce((n, c) => n + c.groups.length, 0), 271)
 
 const byCode = (code: string) => SEED_COURSES.find((c) => c.code === code)!
 

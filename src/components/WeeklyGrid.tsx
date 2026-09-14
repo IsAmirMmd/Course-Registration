@@ -82,34 +82,38 @@ export function WeeklyGrid({
               const label = `${p.course.name} — گروه ${toFaDigits(p.group.groupNo ?? '')} — ${faTime(
                 p.session.start,
               )} تا ${faTime(p.session.end)}${isClash ? ' — دارای تداخل' : ''}`
+              const className = `wg__block${isClash ? ' is-clash' : ''}${
+                isSelected ? ' is-selected' : ''
+              }`
+              const style = {
+                top: block.topPx,
+                height: block.heightPx,
+                insetInlineStart: `${block.leftPct}%`,
+                width: `calc(${block.widthPct}% - 3px)`,
+                ['--course-h' as string]: String(courseHue(p.course.code)),
+              }
+              // بند‌انگشتی داخل دکمه‌ی «ترکیب» رندر می‌شود، پس بلاک‌هایش باید
+              // div تزئینی باشند؛ دکمه‌ی تودرتو HTML نامعتبر است.
+              if (mini) {
+                return <div key={key} className={className} style={style} aria-hidden="true" />
+              }
               return (
                 <button
                   key={key}
                   type="button"
-                  className={`wg__block${isClash ? ' is-clash' : ''}${isSelected ? ' is-selected' : ''}`}
-                  style={{
-                    top: block.topPx,
-                    height: block.heightPx,
-                    insetInlineStart: `${block.leftPct}%`,
-                    width: `calc(${block.widthPct}% - 3px)`,
-                    ['--course-h' as string]: String(courseHue(p.course.code)),
-                  }}
+                  className={className}
+                  style={style}
                   onClick={() => onBlockClick?.(p)}
                   title={label}
                   aria-label={label}
-                  tabIndex={mini ? -1 : 0}
                 >
-                  {!mini && (
-                    <>
-                      <span className="wg__block-name">{p.course.name}</span>
-                      <span className="wg__block-meta">
-                        {faTime(p.session.start)}–{faTime(p.session.end)}
-                        {p.session.kind === 'practical' ? ' · عملی' : ''}
-                      </span>
-                      {block.heightPx > 74 && p.group.instructor && (
-                        <span className="wg__block-meta">{p.group.instructor}</span>
-                      )}
-                    </>
+                  <span className="wg__block-name">{p.course.name}</span>
+                  <span className="wg__block-meta">
+                    {faTime(p.session.start)}–{faTime(p.session.end)}
+                    {p.session.kind === 'practical' ? ' · عملی' : ''}
+                  </span>
+                  {block.heightPx > 74 && p.group.instructor && (
+                    <span className="wg__block-meta">{p.group.instructor}</span>
                   )}
                 </button>
               )
