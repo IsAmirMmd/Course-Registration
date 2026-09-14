@@ -12,6 +12,15 @@ import {
   type PlannerState,
 } from './lib/storage'
 import type { AuditReport } from './lib/parseAudit'
+import {
+  isSameSnapshot,
+  makePlan,
+  uniqueName,
+  withSnapshot,
+  type PlanSnapshot,
+  type SavedPlan,
+} from './lib/plans'
+import { PlanBar } from './components/PlanBar'
 import { ImportPage } from './pages/ImportPage'
 import { CoursesPage } from './pages/CoursesPage'
 import { SchedulePage } from './pages/SchedulePage'
@@ -31,14 +40,98 @@ export default function App() {
   const [mode, setMode] = useState<PlannerMode>(() => restored?.mode ?? 'auto')
   const [considerExams, setConsiderExams] = useState(() => restored?.considerExams ?? true)
   const [audit, setAudit] = useState<AuditReport | null>(() => restored?.audit ?? null)
+  const [plans, setPlans] = useState<SavedPlan[]>(() => restored?.plans ?? [])
+  const [activePlanId, setActivePlanId] = useState<string | null>(
+    () => restored?.activePlanId ?? null,
+  )
   const [tab, setTab] = useState<Tab>(() => (restored?.selected?.length ? 'schedule' : 'courses'))
   const [flash, setFlash] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const state: PlannerState = useMemo(
-    () => ({ courses, selected, manualPicks, mode, considerExams, audit }),
-    [courses, selected, manualPicks, mode, considerExams, audit],
+    () => ({ courses, selected, manualPicks, mode, considerExams, audit, plans, activePlanId }),
+    [courses, selected, manualPicks, mode, considerExams, audit, plans, activePlanId],
   )
+
+  /* ── برنامه‌های ذخیره‌شده ────────────────────────────────────────────────
+     «پیش‌نویس» همان وضعیتِ در‌جریان است؛ یک برنامه‌ی ذخیره‌شده فقط عکسی از آن
+     است. کاتالوگِ درس‌ها مشترک می‌ماند و با بازکردنِ برنامه‌ها عوض نمی‌شود. */
+  const snapshot: PlanSnapshot = useMemo(
+    () => ({ selected, manualPicks, mode, considerExams, audit }),
+    [selected, manualPicks, mode, considerExams, audit],
+  )
+  const activePlan = useMemo(
+    () => plans.find((p) => p.id === activePlanId) ?? null,
+    [plans, activePlanId],
+  )
+  const dirty = useMemo(
+    () =>
+      activePlan
+        ? !isSameSnapshot(activePlan, snapshot)
+        : selected.length > 0 || Object.keys(manualPicks).length > 0,
+    [activePlan, snapshot, selected, manualPicks],
+  )
+
+  const applySnapshot = useCallback((snap: PlanSnapshot) => {
+    setSelected(snap.selected)
+    setManualPicks(snap.manualPicks)
+    setMode(snap.mode)
+    setConsiderExams(snap.considerExams)
+    setAudit(snap.audit)
+  }, [])
+
+  const savePlan = useCallback(() => {
+    if (!activePlanId) return
+    setPlans((prev) => prev.map((p) => (p.id === activePlanId ? withSnapshot(p, snapshot) : p)))
+    setFlash('تغییرها در برنامه ذخیره شد.')
+  }, [activePlanId, snapshot])
+
+  const savePlanAs = useCallback(
+    (name: string) => {
+      const plan = makePlan(uniqueName(name, plans), snapshot)
+      setPlans((prev) => [...prev, plan])
+      setActivePlanId(plan.id)
+      setFlash(`برنامه‌ی «${plan.name}» ذخیره شد.`)
+    },
+    [plans, snapshot],
+  )
+
+  const openPlan = useCallback(
+    (id: string) => {
+      const plan = plans.find((p) => p.id === id)
+      if (!plan) return
+      applySnapshot(plan)
+      setActivePlanId(plan.id)
+      setFlash(`برنامه‌ی «${plan.name}» باز شد.`)
+    },
+    [plans, applySnapshot],
+  )
+
+  const renamePlan = useCallback((id: string, name: string) => {
+    setPlans((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, name: uniqueName(name, prev, id), updatedAt: new Date().toISOString() } : p,
+      ),
+    )
+  }, [])
+
+  const deletePlan = useCallback(
+    (id: string) => {
+      setPlans((prev) => prev.filter((p) => p.id !== id))
+      // حذفِ برنامه‌ی باز، انتخاب‌های روی صفحه را دست‌نخورده می‌گذارد؛ فقط
+      // دیگر به جایی وصل نیست و می‌شود آن را با نام تازه ذخیره کرد.
+      if (id === activePlanId) setActivePlanId(null)
+      setFlash('برنامه حذف شد. انتخاب‌های روی صفحه سر جایشان هستند.')
+    },
+    [activePlanId],
+  )
+
+  const newDraft = useCallback(() => {
+    setSelected([])
+    setManualPicks({})
+    setActivePlanId(null)
+    setFlash('پیش‌نویسِ تازه. برنامه‌های ذخیره‌شده دست‌نخورده‌اند.')
+  }, [])
 
   useEffect(() => {
     saveState(state)
@@ -87,6 +180,8 @@ export default function App() {
       if (data.mode) setMode(data.mode)
       if (typeof data.considerExams === 'boolean') setConsiderExams(data.considerExams)
       if (data.audit !== undefined) setAudit(data.audit)
+      if (data.plans) setPlans(data.plans)
+      if (data.activePlanId !== undefined) setActivePlanId(data.activePlanId)
       setFlash('پشتیبان با موفقیت بازگردانی شد.')
     } catch {
       setFlash('فایل پشتیبان خوانده نشد — مطمئن شوید JSON معتبر است.')
@@ -177,6 +272,22 @@ export default function App() {
           selected={selected}
           onToggle={toggleCourse}
           onGoCourses={() => setTab('courses')}
+        />
+      )}
+
+      {(tab === 'courses' || tab === 'schedule') && (
+        <PlanBar
+          plans={plans}
+          activeId={activePlanId}
+          current={snapshot}
+          dirty={dirty}
+          catalogue={courses}
+          onSave={savePlan}
+          onSaveAs={savePlanAs}
+          onOpen={openPlan}
+          onRename={renamePlan}
+          onDelete={deletePlan}
+          onNewDraft={newDraft}
         />
       )}
 

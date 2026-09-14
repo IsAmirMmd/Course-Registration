@@ -135,6 +135,18 @@ code,
   background: var(--primary-hover);
 }
 
+/* کنشِ برگشت‌ناپذیر (حذف): اناریِ کم‌رنگ، تا از کنارش رد نشوی ولی داد هم نزند */
+.btn--danger {
+  border-color: var(--crit-line);
+  color: var(--crit);
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: var(--crit-weak);
+  border-color: var(--crit);
+  color: var(--crit);
+}
+
 .btn--sm {
   padding: 6px 12px;
   font-size: var(--t-xs);

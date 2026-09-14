@@ -18,6 +18,17 @@ import {
   type AuditGroup,
   type AuditReport,
 } from '../../src/lib/parseAudit'
+import {
+  isSameSnapshot,
+  makePlan,
+  normalizeSnapshot,
+  planStats,
+  sanitizePlans,
+  suggestName,
+  uniqueName,
+  withSnapshot,
+  type PlanSnapshot,
+} from '../../src/lib/plans'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -102,6 +113,79 @@ const byCode = (code: string) => SEED_COURSES.find((c) => c.code === code)!
 const term = ['1221005', '1221008', '1221012', '1221013', '1221021', '1221019'].map(byCode)
 eq('واحد ترم', totalCredits(term), 16)
 const res = solve(term)
+// ── برنامه‌های ذخیره‌شده
+const snap = (over: Partial<PlanSnapshot> = {}): PlanSnapshot => ({
+  selected: ['1221005', '1221008'],
+  manualPicks: { '1221005': '1221005_01' },
+  mode: 'auto',
+  considerExams: true,
+  audit: null,
+  ...over,
+})
+
+// ترتیبِ انتخاب و تکرار نباید «تغییر» به حساب بیاید
+eq(
+  'ترتیبِ انتخاب بی‌اهمیت است',
+  isSameSnapshot(snap(), snap({ selected: ['1221008', '1221005', '1221005'] })),
+  true,
+)
+eq(
+  'گروهِ دستیِ درسِ انتخاب‌نشده نادیده گرفته می‌شود',
+  isSameSnapshot(snap(), snap({ manualPicks: { '1221005': '1221005_01', '9999999': 'x_01' } })),
+  true,
+)
+eq('حذفِ یک درس یعنی تغییر', isSameSnapshot(snap(), snap({ selected: ['1221005'] })), false)
+eq('عوض‌شدنِ گروه یعنی تغییر', isSameSnapshot(snap(), snap({ manualPicks: { '1221005': '1221005_02' } })), false)
+eq('عوض‌شدنِ حالت یعنی تغییر', isSameSnapshot(snap(), snap({ mode: 'manual' })), false)
+eq(
+  'آمدنِ کارنامه یعنی تغییر',
+  isSameSnapshot(snap(), snap({ audit: { summary: {}, groups: [], status: {}, passedCount: 3, warnings: [] } })),
+  false,
+)
+eq('متعارف‌سازی انتخاب‌ها را مرتب می‌کند', normalizeSnapshot(snap({ selected: ['b', 'a', 'a'] })).selected, ['a', 'b'])
+
+const planA = makePlan('برنامه‌ی من', snap())
+eq('برنامه‌ی تازه شناسه دارد', planA.id.length > 1, true)
+eq('برنامه عکسِ همان وضعیت است', isSameSnapshot(planA, snap()), true)
+
+// دو برنامه‌ی پشت‌سرهم نباید شناسه‌ی یکسان بگیرند
+eq('شناسه‌ها یکتا هستند', makePlan('x', snap()).id !== makePlan('y', snap()).id, true)
+
+// ذخیره روی برنامه، شناسه و تاریخِ ساخت را نگه می‌دارد
+const planB = withSnapshot(planA, snap({ selected: ['1221012'] }))
+eq('ذخیره شناسه را نگه می‌دارد', planB.id, planA.id)
+eq('ذخیره تاریخ ساخت را نگه می‌دارد', planB.createdAt, planA.createdAt)
+eq('ذخیره وضعیت تازه را می‌گیرد', planB.selected, ['1221012'])
+
+// نام‌های تکراری
+eq('نام تکراری شماره می‌گیرد', uniqueName('برنامه‌ی من', [planA]), 'برنامه‌ی من ۲')
+eq('نام خودش تکراری نیست', uniqueName('برنامه‌ی من', [planA], planA.id), 'برنامه‌ی من')
+eq('نام خالی بی‌نام می‌شود', uniqueName('   ', []), 'برنامه‌ی بی‌نام')
+eq('پیشنهادِ نام با تعداد برنامه‌ها جلو می‌رود', suggestName([planA]), 'برنامه‌ی ۲')
+
+// آمارِ هر برنامه از کاتالوگ خوانده می‌شود، نه از خودِ برنامه
+const statPlan = snap({ selected: ['1221005', '1221008', 'کدِ نبوده'] })
+eq('آمارِ برنامه فقط درس‌های موجود را می‌شمارد', planStats(statPlan, SEED_COURSES), {
+  courses: 2,
+  credits: 6,
+})
+
+// حافظه‌ی دست‌کاری‌شده نباید کلِ فهرست را از بین ببرد
+const restored = sanitizePlans([
+  { ...planA },
+  { id: planA.id, name: 'تکراری', selected: [] }, // شناسه‌ی تکراری
+  { name: 'بی‌شناسه', selected: [] },
+  { id: 'p2', name: 'ناقص', selected: ['x', 7], manualPicks: { a: 1, b: 'g1' }, mode: 'چرت' },
+  'آشغال',
+  null,
+])
+eq('برنامه‌های معتبر خوانده شدند', restored.map((p) => p.id), [planA.id, 'p2'])
+eq('کدهای غیر‌رشته‌ای دور ریخته شدند', restored[1].selected, ['x'])
+eq('گروه‌های غیر‌رشته‌ای دور ریخته شدند', restored[1].manualPicks, { b: 'g1' })
+eq('حالتِ نامعتبر به خودکار برمی‌گردد', restored[1].mode, 'auto')
+eq('برنامه‌ی نامعتبر کارنامه ندارد', restored[1].audit, null)
+eq('ورودیِ غیرآرایه خالی برمی‌گردد', sanitizePlans({ a: 1 }), [])
+
 console.log(`   ترکیب‌ها: ${res.combinations.length} (بررسی ${res.visited} گره، truncated=${res.truncated})`)
 eq('ترکیب پیدا شد', res.combinations.length > 0, true)
 // هر ترکیب واقعاً بی‌تداخل است؟

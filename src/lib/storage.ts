@@ -1,5 +1,6 @@
 import type { Course, Picks } from '../types'
 import type { AuditReport } from './parseAudit'
+import { sanitizePlans, type SavedPlan } from './plans'
 
 const KEY = 'scheduleplanner.v1'
 
@@ -13,6 +14,10 @@ export interface PlannerState {
   considerExams: boolean
   /** کارنامه‌ی تطبیقِ خوانده‌شده (بدون هیچ داده‌ی هویتی) */
   audit: AuditReport | null
+  /** برنامه‌های ذخیره‌شده — هر کدام یک مجموعه‌ی مستقل از انتخاب‌ها */
+  plans: SavedPlan[]
+  /** برنامه‌ای که هم‌اکنون باز است؛ null یعنی «پیش‌نویسِ ذخیره‌نشده» */
+  activePlanId: string | null
 }
 
 export interface BackupFile {
@@ -50,6 +55,10 @@ function sanitize(input: Partial<PlannerState>): Partial<PlannerState> {
   if (typeof input.considerExams === 'boolean') out.considerExams = input.considerExams
   if (input.audit && typeof input.audit === 'object' && Array.isArray(input.audit.groups)) {
     out.audit = input.audit
+  }
+  if (input.plans !== undefined) out.plans = sanitizePlans(input.plans)
+  if (typeof input.activePlanId === 'string' || input.activePlanId === null) {
+    out.activePlanId = input.activePlanId
   }
   return out
 }
