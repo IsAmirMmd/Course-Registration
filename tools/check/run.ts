@@ -5,6 +5,7 @@ import { parseTimeCell, rowsToCourses, type DraftRow } from '../../src/lib/parse
 import { formatSessions, parseSessionsText } from '../../src/lib/sessionText'
 import { diagnose, solve, alternativesFor } from '../../src/lib/solver'
 import { findClashes, placedSessions, totalCredits } from '../../src/lib/conflicts'
+import { fitText, wrapText, type TextMeasurer } from '../../src/lib/exportImage'
 
 let fails = 0
 function stable(value: unknown): string {
@@ -146,6 +147,18 @@ eq('گروه فعلی بی‌تداخل است', alts.find((a) => a.isCurrent)!.
 const orphan = { code: 'X', name: 'بی‌گروه', credits: 3, groups: [] }
 eq('درس بی‌گروه → بی‌ترکیب', solve([orphan]).combinations.length, 0)
 eq('درس بی‌گروه تشخیص داده شد', diagnose([orphan]).emptyCourses.map((c) => c.code), ['X'])
+
+// ── کمکی‌های متنیِ خروجیِ تصویری (اندازه‌گیرِ ساختگی: هر نویسه ۱۰ واحد)
+const measurer: TextMeasurer = { measureText: (t: string) => ({ width: t.length * 10 }) }
+eq('متن جا می‌شود، دست‌نخورده', fitText(measurer, 'abcd', 100), 'abcd')
+eq('متن بلند کوتاه و «…» می‌شود', fitText(measurer, 'abcdefghij', 50), 'abcd…')
+eq('یک خط کامل', wrapText(measurer, 'aa bb', 60, 2), ['aa bb'])
+eq('شکستن به دو خط', wrapText(measurer, 'aaa bbb ccc', 70, 2), ['aaa bbb', 'ccc'])
+// کلمه‌ی جامانده باید با «…» علامت بخورد، نه بی‌صدا حذف شود
+eq('کلمه‌ی جامانده علامت می‌خورد', wrapText(measurer, 'aaa bbb ccc', 40, 2), ['aaa', 'bbb…'])
+// تک‌کلمه‌ی بلندتر از عرض هم باید چیزی برگرداند
+eq('تک‌کلمه‌ی بلند خالی برنمی‌گردد', wrapText(measurer, 'abcdefghij', 50, 1), ['abcd…'])
+eq('متن خالی', wrapText(measurer, '   ', 50, 2), [])
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAILED`)
 if (fails > 0) process.exit(1)

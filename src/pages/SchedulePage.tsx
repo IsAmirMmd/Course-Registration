@@ -8,6 +8,7 @@ import { WeeklyGrid } from '../components/WeeklyGrid'
 import { CourseDetail } from '../components/CourseDetail'
 import { Diagnosis } from '../components/Diagnosis'
 import { CreditMeter, Notice } from '../components/ui'
+import { ExportImageButtons } from '../components/ExportImageButtons'
 import type { PlannerMode } from '../lib/storage'
 
 interface Props {
@@ -76,6 +77,25 @@ export function SchedulePage(props: Props) {
   const pickedCourses = selectedCourses.filter((c) => activePicks[c.code])
   const credits = totalCredits(pickedCourses)
   const placedCourseCount = pickedCourses.length
+
+  // ورودیِ خروجیِ تصویری — راهنمای پایین تصویر از همین می‌آید.
+  // حافظه‌سپاری لازم نیست: چند ده درس، و فقط وقتی کاربر دکمه را بزند مصرف می‌شود.
+  const imageEntries = pickedCourses.flatMap((course) => {
+    const group = course.groups.find((g) => g.id === activePicks[course.code])
+    return group ? [{ course, group }] : []
+  })
+  const imageMeta = [
+    `${toFaDigits(credits)} واحد`,
+    `${toFaDigits(placedCourseCount)} درس`,
+    mode === 'auto' && combos.length > 0
+      ? `ترکیب ${toFaDigits(safeIndex + 1)} از ${toFaDigits(combos.length)}`
+      : 'چیدمان دستی',
+    clashes.length > 0 ? `${toFaDigits(clashes.length)} تداخل زمانی` : 'بدون تداخل زمانی',
+  ].join(' · ')
+  const imageFile =
+    mode === 'auto' && combos.length > 0
+      ? `weekly-schedule-${safeIndex + 1}.png`
+      : 'weekly-schedule.png'
 
   const registerRef = useCallback((code: string, el: HTMLDivElement | null) => {
     if (el) detailRefs.current.set(code, el)
@@ -207,6 +227,12 @@ export function SchedulePage(props: Props) {
               بعدی
             </button>
             <span className="spacer" />
+            <ExportImageButtons
+              placed={placed}
+              entries={imageEntries}
+              meta={imageMeta}
+              filename={imageFile}
+            />
             <button type="button" className="btn btn--sm" onClick={() => setFullscreen(true)}>
               نمایش تمام‌صفحه
             </button>
@@ -323,6 +349,12 @@ export function SchedulePage(props: Props) {
                   جدول هفتگی
                 </h2>
                 <span className="spacer" />
+                <ExportImageButtons
+                  placed={placed}
+                  entries={imageEntries}
+                  meta={imageMeta}
+                  filename={imageFile}
+                />
                 <button type="button" className="btn btn--sm" onClick={() => setFullscreen(true)}>
                   نمایش تمام‌صفحه
                 </button>
@@ -383,6 +415,12 @@ export function SchedulePage(props: Props) {
             )}
             <CreditMeter credits={credits} label="واحد" />
             <span className="spacer" />
+            <ExportImageButtons
+              placed={placed}
+              entries={imageEntries}
+              meta={imageMeta}
+              filename={imageFile}
+            />
             <button type="button" className="btn btn--primary btn--sm" onClick={() => setFullscreen(false)}>
               بستن
             </button>
