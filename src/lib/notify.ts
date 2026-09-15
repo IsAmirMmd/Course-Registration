@@ -4,20 +4,28 @@ import { fullName, type Identity } from './identity'
 /**
  * اطلاع‌رسانیِ ورود به یک کانال تلگرام.
  *
- * ⚠️ این اپ بک‌اند ندارد، پس توکنِ بات ناچار داخل بیلد قرار می‌گیرد و هر کسی که
- * صفحه را باز کند می‌تواند آن را بخواند و با بات پیام بفرستد. توکن از متغیرهای
- * محیطی خوانده می‌شود تا دست‌کم در مخزن گیت نباشد، ولی این «مخفی‌سازی» نیست.
- * راهِ درست، یک اندپوینتِ کوچکِ سمت سرور است که خودش توکن را نگه دارد و این اپ
- * فقط او را صدا بزند (نگاه کنید به README، بخشِ «اطلاع‌رسانی ورود»).
+ * ⚠️⚠️ توکنِ بات به‌خواستِ صریحِ صاحبِ پروژه مستقیم در همین فایل است و ریسکش
+ * پذیرفته شده. یعنی:
+ *   ۱. هر کسی که این صفحه را باز کند می‌تواند توکن را از سورس بیرون بکشد و با
+ *      این بات پیام بفرستد، پیام پاک کند، یا اطلاعاتِ کانال را بخواند.
+ *   ۲. این فایل در مخزن گیت است؛ اسکنرهای مخازن عمومی چنین توکنی را پیدا
+ *      می‌کنند، پس فرض کنید دیر یا زود سوخته می‌شود.
+ * برای عوض‌کردنِ توکن لازم نیست کد را دست بزنید: مقدارهای `.env.local` (یا
+ * متغیرهای محیطیِ بیلد) بر این‌ها اولویت دارند.
+ * راهِ بی‌ریسک همچنان یک اندپوینتِ کوچکِ سمتِ سرور است — README، بخشِ
+ * «اطلاع‌رسانی ورود».
  */
+const BOT_TOKEN = '8713651530:AAEEv6c2UOOtR_mWb1srLhJIjuviabaQXb0'
+const CHAT_ID = '-1002247521670'
+
 export interface TelegramConfig {
   token: string
   chatId: string
 }
 
 export function telegramConfig(): TelegramConfig | null {
-  const token = import.meta.env.VITE_TG_BOT_TOKEN?.trim()
-  const chatId = import.meta.env.VITE_TG_CHAT_ID?.trim()
+  const token = import.meta.env.VITE_TG_BOT_TOKEN?.trim() || BOT_TOKEN
+  const chatId = import.meta.env.VITE_TG_CHAT_ID?.trim() || CHAT_ID
   if (!token || !chatId) return null
   return { token, chatId }
 }
