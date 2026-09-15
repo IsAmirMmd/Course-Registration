@@ -29,6 +29,24 @@ import {
   withSnapshot,
   type PlanSnapshot,
 } from '../../src/lib/plans'
+import {
+  cleanName,
+  fullName,
+  makeIdentity,
+  sanitizeIdentity,
+  validateName,
+} from '../../src/lib/identity'
+import {
+  buildSignInMessage,
+  deviceLabel,
+  enqueue,
+  escapeHtml,
+  faDateTime,
+  flushQueue,
+  loadQueue,
+  sanitizeQueue,
+  sendTelegram,
+} from '../../src/lib/notify'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -185,6 +203,177 @@ eq('گروه‌های غیر‌رشته‌ای دور ریخته شدند', rest
 eq('حالتِ نامعتبر به خودکار برمی‌گردد', restored[1].mode, 'auto')
 eq('برنامه‌ی نامعتبر کارنامه ندارد', restored[1].audit, null)
 eq('ورودیِ غیرآرایه خالی برمی‌گردد', sanitizePlans({ a: 1 }), [])
+
+// ── هویت و قفلِ ورود
+eq('نام خالی رد می‌شود', validateName('   ', 'firstName'), 'نام را وارد کنید.')
+eq('نام خانوادگیِ خالی رد می‌شود', validateName('', 'lastName'), 'نام خانوادگی را وارد کنید.')
+eq('نامِ یک‌حرفی رد می‌شود', validateName('ا', 'firstName'), 'نام باید دست‌کم ۲ نویسه باشد.')
+eq('رقم در نام رد می‌شود', validateName('امیر2', 'firstName'), 'نام نمی‌تواند رقم داشته باشد.')
+eq('رقم فارسی هم رد می‌شود', validateName('امیر۲', 'firstName'), 'نام نمی‌تواند رقم داشته باشد.')
+eq(
+  'نشانه‌گذاری رد می‌شود',
+  validateName('امیر!', 'firstName'),
+  'نام فقط می‌تواند حرف، فاصله و خط تیره داشته باشد.',
+)
+eq('نام بیش از ۴۰ نویسه رد می‌شود', validateName('ا'.repeat(41), 'firstName') !== null, true)
+eq('نام فارسی پذیرفته می‌شود', validateName('امیر', 'firstName'), null)
+eq('نیم‌فاصله پذیرفته می‌شود', validateName('علی‌رضا', 'firstName'), null)
+eq('ي عربی پذیرفته می‌شود', validateName('يوسف', 'firstName'), null)
+eq('نام دوبخشی پذیرفته می‌شود', validateName('سید احسان', 'firstName'), null)
+eq('نام لاتین پذیرفته می‌شود', validateName('Amir', 'firstName'), null)
+eq('خط تیره پذیرفته می‌شود', validateName('آل-احمد', 'lastName'), null)
+
+eq('فاصله‌های اضافی جمع می‌شوند', cleanName('  امیر    محمدی  '), 'امیر محمدی')
+eq('نیم‌فاصله دست‌نخورده می‌ماند', cleanName('علی‌رضا'), 'علی‌رضا')
+eq('نویسه‌ی جهت‌دهی پاک می‌شود', cleanName('‏امیر‎'), 'امیر')
+eq('ي عربی عوض نمی‌شود', cleanName('يوسف'), 'يوسف')
+
+const me = makeIdentity('  امیر ', ' محمدی ')
+eq('نام کامل', fullName(me), 'امیر محمدی')
+eq('زمان ورود ثبت می‌شود', me.signedInAt.length > 10, true)
+
+// حافظه‌ی دست‌کاری‌شده نباید در قفل را باز کند
+eq('هویتِ درست خوانده می‌شود', sanitizeIdentity({ ...me })?.firstName, 'امیر')
+eq('هویتِ بی‌فامیل رد می‌شود', sanitizeIdentity({ firstName: 'امیر' }), null)
+eq('هویتِ با رقم رد می‌شود', sanitizeIdentity({ firstName: 'امیر1', lastName: 'محمدی' }), null)
+eq('هویتِ تک‌حرفی رد می‌شود', sanitizeIdentity({ firstName: 'ا', lastName: 'م' }), null)
+eq('آرایه هویت نیست', sanitizeIdentity(['امیر', 'محمدی']), null)
+eq('null هویت نیست', sanitizeIdentity(null), null)
+eq('هویتِ بی‌تاریخ، تاریخ می‌گیرد',
+  (sanitizeIdentity({ firstName: 'امیر', lastName: 'محمدی' })?.signedInAt ?? '').length > 10, true)
+
+// ── پیامِ تلگرام
+eq('HTML جدا می‌شود', escapeHtml('<b>a & b</b>'), '&lt;b&gt;a &amp; b&lt;/b&gt;')
+eq('کروم روی ویندوز', deviceLabel('Mozilla/5.0 (Windows NT 10.0) Chrome/140.0 Safari/537.36'), 'Chrome روی ویندوز')
+eq('سافاری روی iOS', deviceLabel('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0) Version/17.0 Safari/604.1'), 'Safari روی iOS')
+eq('فایرفاکس روی لینوکس', deviceLabel('Mozilla/5.0 (X11; Linux x86_64) Firefox/130.0'), 'Firefox روی لینوکس')
+eq('اج بر کروم مقدم است', deviceLabel('Mozilla/5.0 (Windows NT 10.0) Chrome/140 Edg/140'), 'Edge روی ویندوز')
+
+const msg = buildSignInMessage(
+  { firstName: 'امیر', lastName: 'محمدی', signedInAt: '2026-09-15T10:30:00.000Z' },
+  { userAgent: 'Mozilla/5.0 (Windows NT 10.0) Chrome/140', courseCount: 169, groupCount: 271, visit: 1 },
+)
+eq('نام در پیام هست', msg.includes('امیر محمدی'), true)
+eq('تعداد درس‌ها با رقم فارسی', msg.includes('۱۶۹ درس'), true)
+eq('تعداد گروه‌ها با رقم فارسی', msg.includes('۲۷۱ گروه'), true)
+eq('اولین ورود علامت می‌خورد', msg.includes('اولین ورود'), true)
+eq('دستگاه در پیام هست', msg.includes('Chrome روی ویندوز'), true)
+eq('ایموجی دارد', msg.startsWith('🎓'), true)
+eq('تگ b متوازن است', (msg.match(/<b>/g) ?? []).length, (msg.match(/<\/b>/g) ?? []).length)
+
+const repeat = buildSignInMessage(
+  { firstName: 'امیر', lastName: 'محمدی', signedInAt: '2026-09-15T10:30:00.000Z' },
+  { userAgent: 'x', courseCount: 1, groupCount: 1, visit: 4 },
+)
+eq('ورودِ چندم', repeat.includes('ورودِ شماره:</b> ۴'), true)
+
+// تاریخِ شمسی: روزِ هفته اول، بدونِ ویرگولِ بی‌جا (format() خودش برعکس می‌دهد)
+const when = faDateTime('2026-09-15T10:30:00.000Z')
+eq('تاریخ با روزِ هفته شروع می‌شود', /^(شنبه|یکشنبه|یک‌شنبه|دوشنبه|سه‌شنبه|چهارشنبه|پنجشنبه|پنج‌شنبه|جمعه) /u.test(when.date), true)
+eq('تاریخ ویرگول ندارد', /[,،]/.test(when.date), false)
+eq('تاریخ به سال ختم می‌شود', /\s[۰-۹]{4}$/u.test(when.date), true)
+eq('ساعت دو رقم دو رقم است', /^[۰-۹]{2}:[۰-۹]{2}$/u.test(when.time), true)
+eq('تاریخِ خراب، خطا نمی‌دهد', typeof faDateTime('چرت').date, 'string')
+
+// نامی که خودش HTML دارد نباید پیام را بشکند
+const evil = buildSignInMessage(
+  { firstName: '<script>', lastName: 'x', signedInAt: '2026-09-15T10:30:00.000Z' },
+  { userAgent: 'x', courseCount: 1, groupCount: 1, visit: 1 },
+)
+eq('نامِ مخرب جدا می‌شود', evil.includes('&lt;script&gt;'), true)
+eq('تگ خام در پیام نیست', evil.includes('<script>'), false)
+
+// ── فرستادنِ پیام: درخواست درست ساخته می‌شود و خطاها بلعیده نمی‌شوند
+let captured: { url: string; body: unknown } | null = null
+const okFetch = (async (url: string, init: RequestInit) => {
+  captured = { url: String(url), body: JSON.parse(String(init.body)) }
+  return { ok: true, json: async () => ({ ok: true }) }
+}) as unknown as typeof fetch
+
+await sendTelegram({ token: 'T', chatId: '-100' }, 'سلام', okFetch)
+eq('آدرس درست', captured!.url, 'https://api.telegram.org/botT/sendMessage')
+eq('بدنه‌ی درست', captured!.body, {
+  chat_id: '-100',
+  text: 'سلام',
+  parse_mode: 'HTML',
+  disable_web_page_preview: true,
+})
+
+const badFetch = (async () => ({
+  ok: false,
+  status: 401,
+  json: async () => ({ ok: false, description: 'Unauthorized' }),
+})) as unknown as typeof fetch
+eq('خطای تلگرام برگردانده می‌شود', await sendTelegram({ token: 'T', chatId: '-1' }, 'x', badFetch), {
+  ok: false,
+  error: 'Unauthorized',
+})
+
+const deadFetch = (() => Promise.reject(new Error('offline'))) as unknown as typeof fetch
+eq('قطعیِ شبکه پیامِ فارسی می‌دهد', await sendTelegram({ token: 'T', chatId: '-1' }, 'x', deadFetch), {
+  ok: false,
+  error: 'به تلگرام وصل نشد (شبکه یا فیلترینگ)',
+})
+
+// صفِ خراب نباید همه چیز را از بین ببرد
+eq('صفِ معتبر خوانده می‌شود', sanitizeQueue([{ id: 'a', text: 'x', queuedAt: 'z' }]).length, 1)
+eq('مدخلِ بی‌متن کنار می‌رود', sanitizeQueue([{ id: 'a', text: '' }, { id: 'b', text: 'y' }]).map((n) => n.id), ['b'])
+eq('ورودیِ غیرآرایه صفِ خالی است', sanitizeQueue('x'), [])
+
+// صف روی localStorage می‌نشیند؛ در Node یک بدلِ کوچک بس است
+const memory = new Map<string, string>()
+;(globalThis as { localStorage?: unknown }).localStorage = {
+  getItem: (k: string) => memory.get(k) ?? null,
+  setItem: (k: string, v: string) => void memory.set(k, v),
+  removeItem: (k: string) => void memory.delete(k),
+}
+
+const cfg = { token: 'T', chatId: '-100' }
+
+// شکست: پیام در صف می‌ماند و چیزی گم نمی‌شود
+memory.clear()
+enqueue('اول')
+const dead = (() => Promise.reject(new Error('offline'))) as unknown as typeof fetch
+eq('شکست: چیزی نرفت', await flushQueue(cfg, dead), { sent: 0, left: 1 })
+eq('شکست: پیام در صف ماند', loadQueue().map((n) => n.text), ['اول'])
+
+// موفقیت: به ترتیب می‌روند و صف خالی می‌شود
+enqueue('دوم')
+const seen: string[] = []
+const good = (async (_url: string, init: RequestInit) => {
+  seen.push(JSON.parse(String(init.body)).text)
+  return { ok: true, json: async () => ({ ok: true }) }
+}) as unknown as typeof fetch
+eq('موفقیت: هر دو رفتند', await flushQueue(cfg, good), { sent: 2, left: 0 })
+eq('ترتیب حفظ شد', seen, ['اول', 'دوم'])
+eq('صف خالی شد', loadQueue().length, 0)
+
+// دو خالی‌کردنِ هم‌زمان (چیزی که StrictMode می‌سازد) نباید دوباره بفرستد
+memory.clear()
+enqueue('یکتا')
+const counted: string[] = []
+const slow = (async (_url: string, init: RequestInit) => {
+  counted.push(JSON.parse(String(init.body)).text)
+  await new Promise((r) => setTimeout(r, 20))
+  return { ok: true, json: async () => ({ ok: true }) }
+}) as unknown as typeof fetch
+const races = await Promise.all([flushQueue(cfg, slow), flushQueue(cfg, slow)])
+eq('پیام فقط یک بار رفت', counted, ['یکتا'])
+eq('جمعِ فرستاده‌ها یک است', races.reduce((n, r) => n + r.sent, 0), 1)
+eq('صف بعد از هر دو خالی است', loadQueue().length, 0)
+
+// شکستِ وسطِ کار: رفته‌ها نمی‌مانند، نرفته‌ها می‌مانند
+memory.clear()
+enqueue('الف')
+enqueue('ب')
+let calls = 0
+const flaky = (async () => {
+  calls++
+  if (calls === 1) return { ok: true, json: async () => ({ ok: true }) }
+  return { ok: false, status: 500, json: async () => ({ ok: false, description: 'boom' }) }
+}) as unknown as typeof fetch
+eq('یکی رفت، یکی ماند', await flushQueue(cfg, flaky), { sent: 1, left: 1 })
+eq('نرفته سرِ صف است', loadQueue().map((n) => n.text), ['ب'])
 
 console.log(`   ترکیب‌ها: ${res.combinations.length} (بررسی ${res.visited} گره، truncated=${res.truncated})`)
 eq('ترکیب پیدا شد', res.combinations.length > 0, true)

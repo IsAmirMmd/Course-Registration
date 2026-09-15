@@ -21,6 +21,15 @@ import {
   type SavedPlan,
 } from './lib/plans'
 import { PlanBar } from './components/PlanBar'
+import { LoginDialog } from './components/LoginDialog'
+import { clearIdentity, fullName, loadIdentity, saveIdentity, type Identity } from './lib/identity'
+import {
+  buildSignInMessage,
+  enqueue,
+  flushQueue,
+  loadQueue,
+  telegramConfig,
+} from './lib/notify'
 import { ImportPage } from './pages/ImportPage'
 import { CoursesPage } from './pages/CoursesPage'
 import { SchedulePage } from './pages/SchedulePage'
@@ -29,6 +38,9 @@ import { Notice } from './components/ui'
 import './App.css'
 
 type Tab = 'import' | 'audit' | 'courses' | 'schedule'
+
+/** شمارشِ ورودها، فقط برای اینکه پیامِ تلگرام بگوید چندمین بار است */
+const VISITS_KEY = 'scheduleplanner.visits.v1'
 
 export default function App() {
   // localStorage فقط یک بار، در همان اولین رندر، خوانده می‌شود
@@ -47,6 +59,12 @@ export default function App() {
   const [tab, setTab] = useState<Tab>(() => (restored?.selected?.length ? 'schedule' : 'courses'))
   const [flash, setFlash] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  /* ── قفلِ ورود ───────────────────────────────────────────────────────────
+     تا نام و نام خانوادگی در localStorage نباشد، هیچ صفحه‌ای رندر نمی‌شود. */
+  const [identity, setIdentity] = useState<Identity | null>(loadIdentity)
+  const [editingName, setEditingName] = useState(false)
+  const [loginError, setLoginError] = useState<string | null>(null)
 
   const state: PlannerState = useMemo(
     () => ({ courses, selected, manualPicks, mode, considerExams, audit, plans, activePlanId }),
@@ -136,6 +154,75 @@ export default function App() {
   useEffect(() => {
     saveState(state)
   }, [state])
+
+  /**
+   * ورود: نام را ذخیره کن و اطلاع‌رسانی را در صف بگذار. فرستادنِ پیام هرگز جلوی
+   * ورود را نمی‌گیرد — تلگرام ممکن است در دسترس نباشد، و صف در بارِ بعدی دوباره
+   * تلاش می‌کند.
+   */
+  const signIn = useCallback(
+    (next: Identity) => {
+      if (!saveIdentity(next)) {
+        setLoginError(
+          'نام ذخیره نشد. حافظه‌ی مرورگر بسته است؟ (پنجره‌ی ناشناس، یا مسدود‌بودنِ داده‌ی سایت)',
+        )
+        return
+      }
+      setLoginError(null)
+      const renaming = editingName
+      setIdentity(next)
+      setEditingName(false)
+      if (renaming) {
+        setFlash(`نام شما به «${fullName(next)}» تغییر کرد.`)
+        return
+      }
+      let visit = 1
+      try {
+        visit = Number(localStorage.getItem(VISITS_KEY) ?? '0') + 1
+        localStorage.setItem(VISITS_KEY, String(visit))
+      } catch {
+        /* شمارشِ ورود حیاتی نیست */
+      }
+      enqueue(
+        buildSignInMessage(next, {
+          userAgent: navigator.userAgent,
+          courseCount: courses.length,
+          groupCount: courses.reduce((n, c) => n + c.groups.length, 0),
+          visit,
+        }),
+      )
+      setFlash(`${fullName(next)} عزیز، خوش آمدید 🎓`)
+    },
+    [courses, editingName],
+  )
+
+  const signOut = useCallback(() => {
+    if (
+      !confirm(
+        'از حساب خارج می‌شوید؟ برنامه‌ها و انتخاب‌هایتان پاک نمی‌شود، ولی برای ادامه باید دوباره نام وارد کنید.',
+      )
+    )
+      return
+    clearIdentity()
+    setIdentity(null)
+    setEditingName(false)
+  }, [])
+
+  // صفِ اطلاع‌رسانی را بعد از ورود خالی کن — و در هر بارِ بعدی، اگر چیزی مانده
+  useEffect(() => {
+    if (!identity) return
+    const cfg = telegramConfig()
+    if (!cfg || loadQueue().length === 0) return
+    let cancelled = false
+    void flushQueue(cfg).then(({ left }) => {
+      if (!cancelled && left > 0) {
+        setFlash('اطلاع‌رسانیِ ورود به تلگرام نرسید؛ در بارِ بعدی دوباره تلاش می‌شود.')
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [identity])
 
   const selectedCourses = useMemo(() => {
     const set = new Set(selected)
@@ -238,20 +325,22 @@ export default function App() {
           </span>
         </div>
         <span className="spacer" />
-        <nav className="tabs" aria-label="بخش‌های برنامه">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={`tabs__btn${tab === t.id ? ' is-active' : ''}`}
-              onClick={() => setTab(t.id)}
-              aria-current={tab === t.id ? 'page' : undefined}
-            >
-              {t.label}
-              {t.badge && <span className="tabs__badge num">{t.badge}</span>}
-            </button>
-          ))}
-        </nav>
+        {identity && (
+          <nav className="tabs" aria-label="بخش‌های برنامه">
+            {tabs.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`tabs__btn${tab === t.id ? ' is-active' : ''}`}
+                onClick={() => setTab(t.id)}
+                aria-current={tab === t.id ? 'page' : undefined}
+              >
+                {t.label}
+                {t.badge && <span className="tabs__badge num">{t.badge}</span>}
+              </button>
+            ))}
+          </nav>
+        )}
       </header>
 
       {flash && (
@@ -260,65 +349,96 @@ export default function App() {
         </div>
       )}
 
-      {tab === 'import' && (
-        <ImportPage courses={courses} onSave={replaceCourses} onGoNext={() => setTab('courses')} />
-      )}
+      {/* بدونِ هویت، هیچ صفحه‌ای رندر نمی‌شود — نه فقط غیرفعال، بلکه اصلاً نیست */}
+      {identity ? (
+        <>
+          {tab === 'import' && (
+            <ImportPage
+              courses={courses}
+              onSave={replaceCourses}
+              onGoNext={() => setTab('courses')}
+            />
+          )}
 
-      {tab === 'audit' && (
-        <AuditPage
-          courses={courses}
-          report={audit}
-          onReport={setAudit}
-          selected={selected}
-          onToggle={toggleCourse}
-          onGoCourses={() => setTab('courses')}
-        />
-      )}
+          {tab === 'audit' && (
+            <AuditPage
+              courses={courses}
+              report={audit}
+              onReport={setAudit}
+              selected={selected}
+              onToggle={toggleCourse}
+              onGoCourses={() => setTab('courses')}
+            />
+          )}
 
-      {(tab === 'courses' || tab === 'schedule') && (
-        <PlanBar
-          plans={plans}
-          activeId={activePlanId}
-          current={snapshot}
-          dirty={dirty}
-          catalogue={courses}
-          onSave={savePlan}
-          onSaveAs={savePlanAs}
-          onOpen={openPlan}
-          onRename={renamePlan}
-          onDelete={deletePlan}
-          onNewDraft={newDraft}
-        />
-      )}
+          {(tab === 'courses' || tab === 'schedule') && (
+            <PlanBar
+              plans={plans}
+              activeId={activePlanId}
+              current={snapshot}
+              dirty={dirty}
+              catalogue={courses}
+              onSave={savePlan}
+              onSaveAs={savePlanAs}
+              onOpen={openPlan}
+              onRename={renamePlan}
+              onDelete={deletePlan}
+              onNewDraft={newDraft}
+            />
+          )}
 
-      {tab === 'courses' && (
-        <CoursesPage
-          courses={courses}
-          audit={audit}
-          selected={selected}
-          onToggle={toggleCourse}
-          onClear={() => setSelected([])}
-          onGoNext={() => setTab('schedule')}
-          onGoAudit={() => setTab('audit')}
-        />
-      )}
+          {tab === 'courses' && (
+            <CoursesPage
+              courses={courses}
+              audit={audit}
+              selected={selected}
+              onToggle={toggleCourse}
+              onClear={() => setSelected([])}
+              onGoNext={() => setTab('schedule')}
+              onGoAudit={() => setTab('audit')}
+            />
+          )}
 
-      {tab === 'schedule' && (
-        <SchedulePage
-          selectedCourses={selectedCourses}
-          catalogue={courses}
-          mode={mode}
-          onModeChange={setMode}
-          manualPicks={manualPicks}
-          onManualPick={pickGroup}
-          considerExams={considerExams}
-          onConsiderExamsChange={setConsiderExams}
-          onDropCourse={dropCourse}
-          onGoCourses={() => setTab('courses')}
-        />
+          {tab === 'schedule' && (
+            <SchedulePage
+              selectedCourses={selectedCourses}
+              catalogue={courses}
+              mode={mode}
+              onModeChange={setMode}
+              manualPicks={manualPicks}
+              onManualPick={pickGroup}
+              considerExams={considerExams}
+              onConsiderExamsChange={setConsiderExams}
+              onDropCourse={dropCourse}
+              onGoCourses={() => setTab('courses')}
+            />
+          )}
+        </>
+      ) : (
+        <div className="card locked">
+          <span className="locked__icon" aria-hidden="true">
+            🔒
+          </span>
+          <h2 className="locked__title">برای شروع، نام خود را وارد کنید</h2>
+          <p className="locked__text">
+            تا نام و نام خانوادگی‌تان ثبت نشود، برنامه‌ریز باز نمی‌شود. این نام فقط در حافظه‌ی
+            همین مرورگر ذخیره می‌شود.
+          </p>
+        </div>
       )}
 
       <footer className="footer-note">
+        {identity && (
+          <div className="row row--wrap" style={{ justifyContent: 'center', marginBottom: 10 }}>
+            <span className="chip chip--primary">👤 {fullName(identity)}</span>
+            <button type="button" className="btn btn--sm" onClick={() => setEditingName(true)}>
+              تغییر نام
+            </button>
+            <button type="button" className="btn btn--sm btn--danger" onClick={signOut}>
+              خروج
+            </button>
+          </div>
+        )}
         <div className="row row--wrap" style={{ justifyContent: 'center', marginBottom: 10 }}>
           <button
             type="button"
@@ -346,6 +466,20 @@ export default function App() {
         داده‌ی پیش‌فرض: دروس ارائه‌شده‌ی نیمسال اول ۱۴۰۵–۱۴۰۶، دانشگاه صنعتی نوشیروانی بابل
         ({toFaDigits(SEED_COURSES.length)} درس، {toFaDigits(SEED_COURSES.reduce((n, c) => n + c.groups.length, 0))} گروه).
       </footer>
+
+      {/* کلیدِ `editingName` باعث می‌شود فرم با مقدارهای تازه از نو ساخته شود */}
+      <LoginDialog
+        key={editingName ? 'rename' : 'gate'}
+        open={!identity || editingName}
+        initial={editingName ? identity : null}
+        dismissable={editingName}
+        onSubmit={signIn}
+        onDismiss={() => {
+          setEditingName(false)
+          setLoginError(null)
+        }}
+        error={loginError}
+      />
     </div>
   )
 }

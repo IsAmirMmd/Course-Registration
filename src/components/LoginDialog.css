@@ -1,0 +1,137 @@
+/* فرمِ ورود — پاپ‌آپِ بومیِ <dialog> */
+
+.login {
+  border: 0;
+  padding: 0;
+  background: none;
+  max-width: min(420px, calc(100vw - 32px));
+  width: 100%;
+  color: var(--ink);
+}
+
+.login::backdrop {
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+  backdrop-filter: blur(3px);
+}
+
+.login__box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 26px 24px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  text-align: start;
+}
+
+/* همان نشانِ سربرگ، در اندازه‌ی بزرگ‌تر و وسط‌چین */
+.login__mark {
+  display: grid;
+  grid-template-columns: repeat(3, 7px);
+  grid-auto-rows: 7px;
+  gap: 3px;
+  padding: 9px;
+  border-radius: var(--r-md);
+  background: var(--primary);
+  margin: 0 auto 6px;
+}
+
+.login__mark i {
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--primary-ink) 30%, transparent);
+}
+
+.login__mark i.on {
+  background: var(--primary-ink);
+}
+
+.login__title {
+  margin: 0;
+  text-align: center;
+  font-size: var(--t-h2);
+  font-weight: 800;
+}
+
+.login__sub {
+  margin: 0 0 10px;
+  text-align: center;
+  font-size: var(--t-sm);
+  line-height: 1.75;
+  color: var(--ink-2);
+}
+
+.login__label {
+  font-size: var(--t-label);
+  font-weight: 700;
+  color: var(--ink-2);
+  margin-top: 6px;
+}
+
+.login .field.is-bad {
+  border-color: var(--crit);
+}
+
+.login .field.is-bad:focus {
+  outline-color: var(--crit);
+}
+
+.login__err {
+  margin: 2px 0 0;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  color: var(--crit);
+}
+
+.login__notice {
+  margin-top: 12px;
+}
+
+.login__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.login__actions .btn {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.login__foot {
+  margin: 14px 0 0;
+  font-size: var(--t-xs);
+  line-height: 1.85;
+  color: var(--ink-3);
+}
+
+/* ─────────── صفحه‌ی قفل، پشتِ پاپ‌آپ ─────────── */
+
+.locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 44px 24px;
+  text-align: center;
+}
+
+.locked__icon {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.locked__title {
+  margin: 0;
+  font-size: var(--t-h2);
+  font-weight: 800;
+}
+
+.locked__text {
+  margin: 0;
+  max-width: 44ch;
+  font-size: var(--t-sm);
+  line-height: 1.85;
+  color: var(--ink-2);
+}

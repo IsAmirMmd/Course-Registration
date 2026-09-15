@@ -25,6 +25,8 @@ export function toFaDigits(input: string | number): string {
 const INVISIBLE = /[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g
 const DIACRITICS = /[\u064B-\u0652\u0640]/g
 const NBSP = /[\u00A0\u2000-\u200A\u3000]/g
+/** همان نامرئی‌ها، ولی بدونِ نیم‌فاصله (U+200C) */
+const INVISIBLE_KEEP_ZWNJ = /[\u200B\u200D-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g
 
 /**
  * نرمال‌سازی متن فارسی برای «مقایسه» (نه نمایش):
@@ -40,4 +42,13 @@ export function normalizeFa(input: string): string {
     .replace(NBSP, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+/**
+ * پاک‌سازی متنی که «نمایش» داده می‌شود: نویسه‌های نامرئی و
+ * فاصله‌های غیرمعمول می‌روند، ولی نیم‌فاصله می‌ماند (در «علی‌رضا»
+ * معنا دارد) و ی/ک عربی هم دست‌نخورده می‌ماند.
+ */
+export function tidyText(input: string): string {
+  return input.replace(INVISIBLE_KEEP_ZWNJ, '').replace(NBSP, ' ').replace(/\s+/g, ' ').trim()
 }
